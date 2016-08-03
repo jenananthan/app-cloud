@@ -22,10 +22,9 @@ import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
 import io.fabric8.kubernetes.api.model.extensions.Ingress;
 import io.fabric8.kubernetes.api.model.extensions.IngressList;
+import io.fabric8.kubernetes.client.AutoAdaptableKubernetesClient;
 import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.apache.commons.collections.functors.ExceptionClosure;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.appcloud.common.util.AppCloudUtil;
@@ -50,9 +49,9 @@ public class KubernetesProvisioningUtils {
      *
      * @return Kubernetes client object
      */
-    public static KubernetesClient getFabric8KubernetesClient() {
+    public static AutoAdaptableKubernetesClient getFabric8KubernetesClient() {
 
-        KubernetesClient kubernetesClient = null;
+        AutoAdaptableKubernetesClient kubernetesClient = null;
 
         Config config = new Config();
         config.setUsername(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_MASTER_USERNAME));
@@ -61,7 +60,7 @@ public class KubernetesProvisioningUtils {
                 new String[] { AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_MASTER_URL) });
         config.setMasterUrl(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_MASTER_URL));
         config.setApiVersion(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_API_VERSION));
-        kubernetesClient = new DefaultKubernetesClient(config);
+        kubernetesClient = new AutoAdaptableKubernetesClient(config);
 
         return kubernetesClient;
     }
@@ -94,7 +93,7 @@ public class KubernetesProvisioningUtils {
     public static PodList getPods (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         PodList podList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata()
                 .getName()).pods().withLabels(selector).list();
         return podList;
@@ -109,7 +108,7 @@ public class KubernetesProvisioningUtils {
     public static DeploymentList getDeployments (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         DeploymentList deploymentList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
                                                         .extensions().deployments().withLabels(selector).list();
         return deploymentList;
@@ -124,7 +123,7 @@ public class KubernetesProvisioningUtils {
     public static ReplicationControllerList getReplicationControllers (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         ReplicationControllerList rcList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
                                                            .replicationControllers().withLabels(selector).list();
         return rcList;
@@ -139,7 +138,7 @@ public class KubernetesProvisioningUtils {
     public static IngressList getIngresses (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         IngressList ingressList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
                                                   .extensions().ingress().withLabels(selector).list();
         return ingressList;
@@ -154,7 +153,7 @@ public class KubernetesProvisioningUtils {
     public static SecretList getSecrets (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         SecretList secretList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
                                                 .secrets().withLabels(selector).list();
         return secretList;
@@ -168,7 +167,7 @@ public class KubernetesProvisioningUtils {
      */
     public static ServiceList getServices(ApplicationContext applicationContext){
         Map<String, String> selector = getLableMap(applicationContext);
-        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
         ServiceList serviceList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata()
                 .getName()).services().withLabels(selector).list();
         return serviceList;
