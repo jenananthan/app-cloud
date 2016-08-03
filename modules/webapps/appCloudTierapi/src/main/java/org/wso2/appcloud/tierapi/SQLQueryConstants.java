@@ -52,6 +52,9 @@ public class SQLQueryConstants {
     public static final String GET_SUBSCRIPTION_PLANS_BY_PLAN_ID = "select * from AC_SUBSCRIPTION_PLANS WHERE " +
             "PLAN_ID = ?";
 
+    public static final String GET_SUBSCRIPTION_PLANS_BY_PLAN_NAME_AND_CLOUD = "select * from AC_SUBSCRIPTION_PLANS WHERE " +
+            "PLAN_NAME = ? AND CLOUD_ID = (SELECT id from AC_CLOUD WHERE name=?)";
+
     public static final String GET_SUBSCRIPTION_PLANS_BY_PLAN_NAME = "select * from AC_SUBSCRIPTION_PLANS WHERE " +
             "PLAN_NAME = ?";
 

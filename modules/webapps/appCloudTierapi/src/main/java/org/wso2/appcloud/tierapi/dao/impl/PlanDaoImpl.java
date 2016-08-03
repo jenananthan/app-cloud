@@ -93,6 +93,34 @@ public class PlanDaoImpl implements PlanDao{
 		return plan;
 	}
 
+    @Override
+    public Plan getPlanByPlanName(String cloudType, String planName) throws SQLException {
+        Connection dbConnection = null;
+        PreparedStatement preparedStatement = null;
+        Plan plan = new Plan();
+        ResultSet rs = null;
+        try {
+            dbConnection = DBUtil.getConnection();
+            preparedStatement = dbConnection.prepareStatement(SQLQueryConstants.GET_SUBSCRIPTION_PLANS_BY_PLAN_NAME_AND_CLOUD);
+            preparedStatement.setString(1, planName);
+            preparedStatement.setString(2, cloudType);
+            rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                plan = getPlan(rs);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            String msg = "Error while getting plan for plan name: " + planName + " and cloud : " + cloudType;
+            log.error(msg, e);
+            throw e;
+        } finally {
+            DBUtil.closeResultSet(rs);
+            DBUtil.closePreparedStatement(preparedStatement);
+            DBUtil.closeDatabaseConnection(dbConnection);
+        }
+        return plan;
+    }
+
 	@Override
 	public Plan definePlan(Plan plan) throws SQLException {
 		Connection dbConnection = null;

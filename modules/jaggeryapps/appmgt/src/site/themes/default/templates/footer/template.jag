@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -17,11 +17,13 @@
  *   under the License.
  */
 
-jagg.template("footer", function(inputs, outputs, jagg) { %>
+jagg.template("footer", function(inputs, outputs, jagg) {
+    var pageTitle = outputs.pageTitle;
+    %>
 	
 	<div id="footer">
 	    <div class="container-fluid">
-	        <div class="footer-text">WSO2 App Cloud Beta . &copy; 2016 <i class="fw fw-wso2 fw-2x"></i> All Rights
+	        <div class="footer-text"><%=pageTitle%> Beta . &copy; 2016 <i class="fw fw-wso2 fw-2x"></i> All Rights
 	        Reserved.</div>
 	    </div>
 	</div>

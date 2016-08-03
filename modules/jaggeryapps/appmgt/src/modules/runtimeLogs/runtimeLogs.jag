@@ -32,11 +32,10 @@ var getRuntimeLogs = function (applicationKey, selectedRevision, applicationType
 
     var deploymentLog;
     var applicationName = ApplicationManager.getApplicationNameByHashId(applicationKey);
-    var runtimeValidApplicationName = Util.getRuntimeValidAppName(applicationName);
     var versionHashId = Util.getVersionHashId(applicationName, selectedRevision, modManager.getTenantId());
 
     try {
-        var applicationCtx = KubernetesProvisioningUtils.getApplicationContext(runtimeValidApplicationName, selectedRevision,
+        var applicationCtx = KubernetesProvisioningUtils.getApplicationContext(applicationName, selectedRevision,
                                                                                applicationType,
                                                                                modManager.getTenantId(),
                                                                                modManager.getTenantDomain(), versionHashId);

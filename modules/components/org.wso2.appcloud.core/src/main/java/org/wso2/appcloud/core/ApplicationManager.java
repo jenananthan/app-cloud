@@ -167,20 +167,20 @@ public class ApplicationManager {
 
 
     /**
-     * Method for getting the list of application of a tenant.
-     *
+     * Method for getting the list of application of a tenant per cloud
+     * @param cloudType cloud type
      * @return array of application objects
      * @throws AppCloudException
      */
-    public static Application[] getApplicationList() throws AppCloudException {
+    public static Application[] getApplicationList(String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
             List<Application> applications = ApplicationDAO.getInstance().
-                    getAllApplicationsList(dbConnection, tenantId);
+                    getAllApplicationsList(dbConnection, tenantId, cloudType);
             return applications.toArray(new Application[applications.size()]);
         } catch (AppCloudException e) {
-            String msg = "Error while getting application list for tenant id : " + tenantId;
+            String msg = "Error while getting application list for tenant id : " + tenantId + " and cloud : " + cloudType ;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -814,19 +814,21 @@ public class ApplicationManager {
         }
     }
 
-    /**
-     * Methoid for getting existing applications count.
+     /**
+     * Method for getting existing applications count per cloud
      *
+     * @param cloudType cloud type
      * @return application count
      * @throws AppCloudException
      */
-    public static int getApplicationCount() throws AppCloudException {
+    public static int getApplicationCount(String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
-            return ApplicationDAO.getInstance().getApplicationCount(dbConnection, tenantId);
+            return ApplicationDAO.getInstance().getApplicationCount(dbConnection, tenantId, cloudType);
         } catch (AppCloudException e) {
-            String msg = "Error while getting application count for tenant id : " + tenantId;
+            String msg =
+                    "Error while getting application count for tenant id : " + tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -987,19 +989,19 @@ public class ApplicationManager {
     }
 
     /**
-     * Method for getting maximum application count for whitelisted tenant.
-     *
-     * @param tenantID id of tenant
+     * Method for getting maximum application count for whitelisted tenant per cloud
+     * @param tenantId id of tenant
+     * @param cloudType cloud type
      * @return maximum application count
      * @throws AppCloudException
      */
-    public static int getMaxAppCountForWhiteListedTenants(int tenantID) throws AppCloudException {
+    public static int getMaxAppCountForWhiteListedTenants(int tenantId, String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         try {
-            return ApplicationDAO.getInstance().getWhiteListedTenantMaxAppCount(dbConnection, tenantID);
+            return ApplicationDAO.getInstance().getWhiteListedTenantMaxAppCount(dbConnection, tenantId, cloudType);
         } catch (AppCloudException e) {
             String msg = "Error while getting maximum application count for whitelisted tenant for tenant id : " +
-                    tenantID;
+                    tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -1056,24 +1058,26 @@ public class ApplicationManager {
     }
 
     /**
-     * Method for whitelisting tenant.
+     * Method for whitelisting tenant per cloud
      *
      * @param tenantId         id of tenant
      * @param maxAppCount      maximum application count
      * @param maxDatabaseCount maximum database count
+     * @param cloudType        cloud type
      * @throws AppCloudException
      */
-    public static void whiteListTenant(int tenantId, int maxAppCount, int maxDatabaseCount) throws AppCloudException {
+    public static void whiteListTenant(int tenantId, int maxAppCount, int maxDatabaseCount, String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         try {
-            ApplicationDAO.getInstance().whiteListTenant(dbConnection, tenantId, maxAppCount, maxDatabaseCount);
+            ApplicationDAO.getInstance().whiteListTenant(dbConnection, tenantId, maxAppCount, maxDatabaseCount, cloudType);
             dbConnection.commit();
         } catch (AppCloudException e) {
             String msg = "Error whitelisting tenant for tenant id : " + tenantId;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } catch (SQLException e) {
-            String msg = "Error while committing transaction for whitelisting tenant for tenant id : " + tenantId;
+            String msg = "Error while committing transaction for whitelisting tenant for tenant id : " + tenantId +
+                    " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -1114,19 +1118,19 @@ public class ApplicationManager {
     }
 
     /**
-     * Method for getting maximum database count for white listed tenant.
-     *
-     * @param tenantID id of tenant
+     * Method for getting maximum database count for white listed tenant per cloud
+     * @param tenantId id of tenant
+     * @param cloudType cloud type
      * @return maximum database count
      * @throws AppCloudException
      */
-    public static int getMaxDatabaseCountForWhiteListedTenants(int tenantID) throws AppCloudException {
+    public static int getMaxDatabaseCountForWhiteListedTenants(int tenantId, String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         try {
-            return ApplicationDAO.getInstance().getWhiteListedTenantMaxDatabaseCount(dbConnection, tenantID);
+            return ApplicationDAO.getInstance().getWhiteListedTenantMaxDatabaseCount(dbConnection, tenantId, cloudType);
         } catch (AppCloudException e) {
             String msg = "Error while getting maximum database count for whitelisted tenant for tenant id : " +
-                    tenantID;
+                    tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -1135,24 +1139,25 @@ public class ApplicationManager {
     }
 
     /**
-     * Method for whitelisting maximum database count for tenant.
+     * Method for whitelisting maximum database count for tenant per cloud
      *
      * @param tenantId         id of tenant
      * @param maxDatabaseCount maximum database count
+     * @param cloudType        cloud type
      * @throws AppCloudException
      */
-    public static void whiteListMaxDatabaseCount(int tenantId, int maxDatabaseCount) throws AppCloudException {
+    public static void whiteListMaxDatabaseCount(int tenantId, int maxDatabaseCount, String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         try {
-            ApplicationDAO.getInstance().whiteListMaxDatabaseCount(dbConnection, tenantId, maxDatabaseCount);
+            ApplicationDAO.getInstance().whiteListMaxDatabaseCount(dbConnection, tenantId, maxDatabaseCount, cloudType);
             dbConnection.commit();
         } catch (AppCloudException e) {
-            String msg = "Error whitelisting maximum database count for tenant id : " + tenantId;
+            String msg = "Error whitelisting maximum database count for tenant id : " + tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } catch (SQLException e) {
             String msg = "Error while committing transaction for whitelisting maximum database count for tenant id : "
-                    + tenantId;
+                    + tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -1161,16 +1166,17 @@ public class ApplicationManager {
     }
 
     /**
-     * Method for whitelisting maximum application count for tenant.
+     * Method for whitelisting maximum application count for tenant per cloud
      *
      * @param tenantId    id of tenant
      * @param maxAppCount maximum application count
+     * @param cloudType   cloud type
      * @throws AppCloudException
      */
-    public static void whiteListMaxAppCount(int tenantId, int maxAppCount) throws AppCloudException {
+    public static void whiteListMaxAppCount(int tenantId, int maxAppCount, String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         try {
-            ApplicationDAO.getInstance().whiteListMaxAppCount(dbConnection, tenantId, maxAppCount);
+            ApplicationDAO.getInstance().whiteListMaxAppCount(dbConnection, tenantId, maxAppCount, cloudType);
             dbConnection.commit();
         } catch (AppCloudException e) {
             String msg = "Error whitelisting maximum application count for tenant id : " + tenantId;
@@ -1187,20 +1193,21 @@ public class ApplicationManager {
     }
 
     /**
-     * Get the list of tagged applications.
+     * Get the list of tagged applications per cloud
      *
-     * @return List of all the tagged applications
+     * @param cloudType cloud type
+     * @return List of all the tagged applications per cloud
      * @throws AppCloudException
      */
-    public static Application[] getTaggedApplicationsList() throws AppCloudException {
+    public static Application[] getTaggedApplicationsList(String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
             List<Application> applications = ApplicationDAO.getInstance().
-                    getTaggedApplicationsList(dbConnection, tenantId);
+                    getTaggedApplicationsList(dbConnection, tenantId, cloudType);
             return applications.toArray(new Application[applications.size()]);
         } catch (AppCloudException e) {
-            String msg = "Error while retrieving tagged applications for tenant id : " + tenantId;
+            String msg = "Error while retrieving tagged applications for tenant id : " + tenantId + " and cloud : " + cloudType;
             log.error(msg, e);
             throw new AppCloudException(msg, e);
         } finally {
@@ -1280,4 +1287,23 @@ public class ApplicationManager {
         }
     }
 
+    /**
+     * Get all cloud types
+     *
+     * @return cloud types
+     * @throws AppCloudException
+     */
+    public static String[] getCloudTypes() throws AppCloudException {
+        Connection dbConnection = DBUtil.getDBConnection();
+        try {
+            List<String> cloudTypes = ApplicationDAO.getInstance().getCloudTypes(dbConnection);
+            return cloudTypes.toArray(new String[cloudTypes.size()]);
+        } catch (AppCloudException e) {
+            String msg = "Error while retrieving cloud types from database";
+            log.error(msg, e);
+            throw new AppCloudException(msg, e);
+        } finally {
+            DBUtil.closeConnection(dbConnection);
+        }
+    }
 }

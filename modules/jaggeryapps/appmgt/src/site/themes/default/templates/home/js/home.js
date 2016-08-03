@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *   WSO2 Inc. licenses this file to you under the Apache License,
+ *   Version 2.0 (the "License"); you may not use this file except
+ *   in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an
+ *   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *   KIND, either express or implied.  See the License for the
+ *   specific language governing permissions and limitations
+ *   under the License.
+ */
 // page initialization
 $(document).ready(function() {
     // add upload app icon listener
@@ -20,41 +37,16 @@ $(document).ready(function() {
 function initPageView() {
     loadAppIcon();
     var deploymentURL = selectedApplicationRevision.deploymentURL;
-    var repoUrlHtml = generateLunchUrl(deploymentURL);
+    var repoUrlHtml = generateLunchUrl(deploymentURL, selectedApplicationRevision.status);
     $("#version-url-link").html(repoUrlHtml);
     $('#appVersionList li').click(function() {
         var newRevision = this.textContent;
         changeSelectedRevision(newRevision);
     });
 
-    $('body').on('click', '#btn-launchApp', function() {
-        if(selectedApplicationRevision.status == APPLICATION_RUNNING){
-            var appUrl = $('#btn-launchApp').attr("url");
-            var newWindow = window.open('','_blank');
-            newWindow.location = appUrl;
-        } else if(selectedApplicationRevision.status == APPLICATION_STOPPED) {
-            jagg.message({
-                             modalStatus: true,
-                             type: 'warning',
-                             timeout: 3000,
-                             content: "<b>Application has been stopped. Start the application before launch.</b>"
-                         });
-        } else if(selectedApplicationRevision.status == APPLICATION_INACTIVE) {
-            jagg.message({
-                             modalStatus: true,
-                             type: 'warning',
-                             timeout: 3000,
-                             content: "<b>Application has been stopped due to inactivity. Start the application before launch.</b>"
-                         });
-        } else {
-            jagg.message({
-                             modalStatus: true,
-                             type: 'error',
-                             timeout: 3000,
-                             content: "<b>Error has occurred while application creation. If the problem persists please contact system administrator.</b>"
-                         });
-        }
-    });
+    $('body').on('click', '#btn-launchApp', launchApp);
+    $('body').on('click', '#launch-version-url-a', displayMessage);
+    $('body').on('click', '#launch-default-url-a', displayMessage);
 
     $('#btn-dashboard').click(function() {
         var appUrl = $('#btn-dashboard').attr("url");
@@ -64,6 +56,117 @@ function initPageView() {
 
     listTags();
     listEnvs();
+
+    if (selectedApplicationRevision.status == APPLICATION_RUNNING) {
+        loadEndpoints(deploymentURL, applicationType);
+    }
+
+}
+
+function loadEndpoints(deploymentURL, applicationType) {
+    jagg.post("../blocks/application/application.jag", {
+     action: "loadEndpoints",
+     appType: applicationType,
+     deploymentURL: deploymentURL
+     }, function(result) {
+        var endpoints = JSON.parse(result);
+        var html_1 = '<div class="block-endpoints">'+
+            '<h3>Endpoints</h3>'+
+            '<h4>SOAP Services</h4>'+
+            '<table class="table table-responsive">'+
+            '<thead class="thead">'+
+            '<tr>'+
+            '<th>Name</th>'+
+            '<th>WSDL</th>'+
+            '<th>WSDL2</th>'+
+            '</tr>'+
+            '</thead>'+
+            '<tbody>';
+
+        var html_2;
+        for (var i=0; i < endpoints.data.urls.proxies.length; i++) {
+            var proxy = endpoints.data.urls.proxies[i];
+            html_2 = '<tr>'+
+                '<td>' + proxy.name+'</td>'+
+                '<td><a href="' +proxy.wsdl[1]+ '">'+proxy.wsdl[1] +'</a></td>'+
+                '<td><a href="'+proxy.wsdl[0]+'">'+proxy.wsdl[0]+'</a></td>'+
+                '</tr>';
+        }
+
+        var html_3 =
+            '</tbody>'+
+            '</table>'+
+
+            '<h4>REST APIs</h4>'+
+            '<table class="table table-responsive">'+
+            '<thead class="thead">'+
+            '<tr>'+
+            '<th>Name</th>'+
+            '<th>URL</th>'+
+            '</tr>'+
+            '</thead>'+
+            '<tbody>';
+
+
+        var html_4;
+        for (var j=0; j < endpoints.data.urls.apis.length; j++) {
+            var api = endpoints.data.urls.apis[j];
+            var url = deploymentURL + api.context;
+            if (api.name != "ContainerAPI") {
+
+                html_4 = '<tr>' +
+                    '<td>'+ api.name +'</td>'+
+                    '<td><a href="' + url+ '">' + url + '</a></td>'+
+                    '</tr>';
+            }
+        }
+
+        var html_5 =       '</tbody>'+
+            '</table>'+
+            '</div>';
+
+        $("#app-type-data").html(html_1 + html_2 + html_3 + html_4 + html_5);
+
+     }, function(jqXHR, data, errorThrown) {
+
+     });
+}
+
+function launchApp() {
+    if(selectedApplicationRevision.status == APPLICATION_RUNNING){
+        var appUrl = $('#btn-launchApp').attr("url");
+        var newWindow = window.open('','_blank');
+        newWindow.location = appUrl;
+    } else {
+        displayMessage();
+    }
+}
+
+function displayMessage() {
+    if (selectedApplicationRevision.status != APPLICATION_RUNNING) {
+        if (selectedApplicationRevision.status == APPLICATION_STOPPED) {
+            jagg.message({
+                modalStatus: true,
+                type: 'warning',
+                timeout: 3000,
+                content: "<b>Application has been stopped. Start the application before launch.</b>"
+            });
+        } else if (selectedApplicationRevision.status == APPLICATION_INACTIVE) {
+            jagg.message({
+                modalStatus: true,
+                type: 'warning',
+                timeout: 3000,
+                content: "<b>Application has been stopped due to inactivity. Start the application before launch.</b>"
+            });
+        } else {
+            jagg.message({
+                modalStatus: true,
+                type: 'error',
+                timeout: 3000,
+                content: "<b>Error has occurred while application creation. If the problem persists please contact system administrator.</b>"
+            });
+        }
+    }
 }
 /**
  * This function is to display a message to user to inform that the application is stopped due to
@@ -196,6 +299,12 @@ function changeSelectedRevision(newRevision){
     // Change version status in UI
     if(selectedApplicationRevision.status == APPLICATION_RUNNING){
 
+        $('#launch-default-url-block').empty();
+        $('#launch-default-url-block').html('<a id="launch-default-url-a" target="_blank" href="' + deploymentURL + '">' + deploymentURL + '</a>');
+
+        $('#version-url-link').empty();
+        $('#version-url-link').html('<a id="launch-version-url-a" href="' + deploymentURL + '" target="_blank"><span><b>URL : </b>' + deploymentURL + '</span></a>');
+
         $('#version-app-launch-block').empty();
         $('#version-app-launch-block').html('<button class="cu-btn cu-btn-md cu-btn-gr-dark btn-launch-app" id="btn-launchApp"' +
                        'url="' + deploymentURL + '">Launch App</button>' +
@@ -216,7 +325,14 @@ function changeSelectedRevision(newRevision){
                                  'data-toggle="tooltip" title="Adding replicas to your application will not support in this release."></i>' +
                                  '</span></figcaption></figure></div>');
 
+        loadEndpoints(deploymentURL, applicationType);
     } else if(selectedApplicationRevision.status == APPLICATION_STOPPED || selectedApplicationRevision.status == APPLICATION_INACTIVE){
+
+        $('#launch-default-url-block').empty();
+        $('#launch-default-url-block').html('<a id="launch-default-url-a" target="_blank">' + deploymentURL + '</a>');
+
+        $('#version-url-link').empty();
+        $('#version-url-link').html('<a id="launch-version-url-a" target="_blank"><span><b>URL : </b>' + deploymentURL + '</span></a>');
 
         $('#version-app-launch-block').empty();
         $('#version-app-launch-block').html('<button class="cu-btn cu-btn-md cu-btn-gr-dark btn-launch-app" id="btn-launchApp"' +
@@ -235,6 +351,12 @@ function changeSelectedRevision(newRevision){
                                  '</i></span></figcaption></figure></div>');
     } else {
 
+        $('#launch-default-url-block').empty();
+        $('#launch-default-url-block').html('<a id="launch-default-url-a" target="_blank">' + deploymentURL + '</a>');
+
+        $('#version-url-link').empty();
+        $('#version-url-link').html('<a id="launch-version-url-a" target="_blank"><span><b>URL : </b>' + deploymentURL + '</span></a>');
+
         $('#version-app-launch-block').empty();
         $('#version-app-launch-block').html('<div class="btn-group ctrl-edit-button btn-edit-code">' +
                                             '<a type="button" class="btn cu-btn cu-btn-md cu-btn-red" ' +
@@ -251,10 +373,14 @@ function changeSelectedRevision(newRevision){
     changeLabels(selectedApplicationRevision);
 }
 
-function generateLunchUrl(appURL) {
+function generateLunchUrl(appURL, status) {
     var message = "";
     if(appURL) {
-        message += "<a target='_blank' href='" + appURL + "' >";
+        if(status && status == APPLICATION_RUNNING) {
+            message += "<a id='launch-version-url-a' target='_blank' href='" + appURL + "' >";
+        } else {
+            message += "<a id='launch-version-url-a' target='_blank' >";
+        }
         message += "<span>";
         message += "<b>URL : </b>";
         message += appURL;

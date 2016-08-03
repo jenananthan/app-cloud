@@ -49,6 +49,13 @@ jagg.template("application", function (inputs, outputs, jagg) {
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/web-fonts/Roboto.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/select2-4.0.0/select2.min.css'))%>">
+    <%
+        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
+    %>
+            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
+    <%
+        }
+    %>
 
 <%
     var conSpecs = new Array();
@@ -82,6 +89,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
     var versionHashIdAtFileUpload;
     var progress;
     var fileMoved = false;
+    var envKeyRegex = new RegExp("<%=ENV_KEY_REGEX%>");
     $(document).ready(function(){
 
             if (newVersion == "true") {
@@ -356,11 +364,11 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 });
             });
         }
-
+        var polleventsID;
         function drawProgressWindow(){
             $('#app_creation_progress_modal').modal({ backdrop: 'static', keyboard: false});
             $("#app_creation_progress_modal").show();
-            setInterval(pollEvents, 2000);
+            polleventsID = setInterval(pollEvents, 2000);
         }
 
         function executeAsync(func) {
@@ -368,13 +376,13 @@ jagg.template("application", function (inputs, outputs, jagg) {
         }
 
         function pollEvents() {
-
             jagg.post("../blocks/application/application.jag", {
                 action:"getApplicationCreationEvents",
                 applicationName:$("#applicationName").val(),
                 applicationRevision:$("#applicationRevision").val()
 
             },function (result) {
+
                 $("#progress_table").html("");
                 var result = jQuery.parseJSON(result);
                 var table = "<table class='table' style='width:100%; color:black'>" ;
@@ -420,40 +428,55 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 }
 
                 table = table + "</table>";
-                $("#progress_table").html(table);
 
+                $("#app-creation-model-body").html(modalBody);
+                $("#app-creation-model-footer").html("");
+                $("#progress_table").html(table);
+                if(result.length == 0){
+                    var msg = "Error retrieving creation events for application";
+                    showAppCreationFailedNotification(msg);
+                };
                 for(var i = 0; i < result.length; i++){
                     var statusStyle;
                     var event = result[i];
                     if(event.name === "Status" && event.status == "success"){
                         setTimeout(redirectAppHome, 4250);
                         function redirectAppHome(){
+                            deleteAppCreationEvents();
                             window.location.replace("home.jag?applicationKey=" + applicationHashId);
                         }
                     } else if(event.status == "failed"){
-                        var alert = "<p>Application creation failed. </p><p>Reason: " + event.description + "</p>";
-                        var retry_button = "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"redirectAppListing();\">cancel</button>" +
-                                           "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"retryAppCreation();\">Back to Application Creation</button>";
-                        setTimeout(showErrorPopup, 2000);
-                        function showErrorPopup(){
-                            $("#app-creation-model-body").html(alert);
-                            $("#app-creation-model-footer").html(retry_button);
-                        }
+                        showAppCreationFailedNotification(event.description);
                     }
                 }
             },function (jqXHR, textStatus, errorThrown) {
-                 var alert = "<p>Application creation failed. " + errorThrown + "</p>";
-                 var retry_button = "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"redirectAppListing();\">Cancel</button>" +
-                                    "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"retryAppCreation();\">Back to Application Creation</button>";
-                 setTimeout(showErrorPopup, 1000);
-                 function showErrorPopup(){
-                     $("#app-creation-model-body").html(alert);
-                     $("#app-creation-model-footer").html(retry_button);
-                 }
+                showAppCreationFailedNotification(errorThrown);
             });
         }
 
+        function deleteAppCreationEvents() {
+            jagg.post("../blocks/application/application.jag", {
+                action:"deleteAppCreationEvents",
+                applicationName: $("#applicationName").val(),
+                applicationRevision: $("#applicationRevision").val()
+            }, function (result) {
+                //This just return a boolean from backend
+            }, function(jqXHR, textStatus, errorThrown) {
+                //do not interrupt the application creation process even deletion of events fails.
+            });
+        }
 
+        function showAppCreationFailedNotification(error){
+            var alert = "<p>Application creation failed. " + error + "</p>";
+            var retry_button = "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"redirectAppListing();\">Cancel</button>" +
+                               "<button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" onclick=\"retryAppCreation();\">Back to Application Creation</button>";
+            setTimeout(showErrorPopup, 1000);
+            function showErrorPopup(){
+                $("#app-creation-model-body").html(alert);
+                $("#app-creation-model-footer").html(retry_button);
+            }
+            clearInterval(polleventsID);
+        }
 
         /*** application form validation ***/
 
@@ -597,9 +620,9 @@ jagg.template("application", function (inputs, outputs, jagg) {
         }
 
         function validateApplicationNameChar(value) {
-            var patternNonAlphaNumExceptHyphen = /[^\w-]/g;
+            var patternNonAlphaNumExceptHyphen = /[^a-zA-Z\d\-\_ ]/g;
             var isPatternMatch = patternNonAlphaNumExceptHyphen.test(value);
-            validationFailErrorMsg = "Application Name has invalid characters. Valid characters are a-z A-Z 0-9 -";
+            validationFailErrorMsg = "Application Name has invalid characters. Valid characters are [a-z, A-Z, 0-9, _, -]";
 
             return !isPatternMatch;
         }
@@ -639,7 +662,6 @@ jagg.template("application", function (inputs, outputs, jagg) {
         /** end application creation form validations */
 
         $('#url-upload').click(function(){
-        console.log("inside url upload click");
             $("#url-upload-progress").html("<i class=\"fa fa-circle-o-notch fa-spin\"></i>");
             isUploadUrlValid()
         });
@@ -793,8 +815,12 @@ jagg.template("application", function (inputs, outputs, jagg) {
     }
 
     function validateEnvironmentVariable(value){
+        var keyValidation = validateEnvKey(value);
         if(value != "" && $.inArray(value.toLowerCase(), notAllowedEnvVariables) > -1){
             envVariableErrorMsg = value + " is not allowed";
+            return false;
+        } else if (!keyValidation.status) {
+            envVariableErrorMsg = keyValidation.msg;
             return false;
         } else {
             return true;
@@ -893,6 +919,8 @@ jagg.template("application", function (inputs, outputs, jagg) {
 
     function retryAppCreation() {
         $('#add-application').loadingButton({action:'hide'});
+        $("#app-creation-model-body").html(modalBody);
+        $("#app-creation-model-footer").html("");
     }
 
     function goBack() {

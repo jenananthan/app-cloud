@@ -1,0 +1,182 @@
+<%
+/*
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *   WSO2 Inc. licenses this file to you under the Apache License,
+ *   Version 2.0 (the "License"); you may not use this file except
+ *   in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an
+ *   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *   KIND, either express or implied.  See the License for the
+ *   specific language governing permissions and limitations
+ *   under the License.
+ */
+
+var log = new Log();
+/*
+-----------------------------------------------------------------
+    Sample JSON message we need to return
+
+{
+    "endpoints":{
+        "rest":[
+            {
+                "name":"api1",
+                "endpoints":[
+                    {"methods":"GET, POST","url":"https://apps.wso2.com/api1/{id}"},
+                    {"methods":"GET, POST","url":"https://apps.wso2.com/api1/{name}"}
+                ]
+            },
+            {
+                "name":"api2",
+                "endpoints":[
+                    {"methods":"GET, POST", "url":"https://apps.wso2.com/api2/{id}"}
+                ]
+            }
+        ],
+        "soap":[
+            {
+                "name":"service1",
+                "endpoints":[
+                    {"version":"1.1", "url":"https://apps.wso2.com/services/service1.1?wsdl"},
+                    {"version":"1.2", "url":"https://apps.wso2.com/services/service1.2?wsdl"}
+                ]
+            }
+        ],
+        "web":[
+            {"url":"https://apps.wso2.com/test/plan"}
+        ]
+    }
+}
+-----------------------------------------------------------------
+*/
+
+
+// endpointExtractor interface
+var EndpointsExtractor = {
+    getEndpoints: function (deploymentUrl) {}
+};
+
+// define classes
+var WarEndpointsExtractor = function () {};
+var PHPEndpointsExtractor = function () {};
+var MSSEndpointsExtractor = function () {};
+var ESBEndpointsExtractor = function () {};
+var JaggeryEndpointsExtractor = function () {};
+var DSSEndpointsExtractor = function () {};
+
+// extend the EndpointExtractor interface
+WarEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+PHPEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+MSSEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+ESBEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+JaggeryEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+DSSEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
+
+// actual implementation goes here
+WarEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    return ;
+};
+
+PHPEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    return ;
+};
+
+MSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    return ;
+};
+
+ESBEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    var containerApiUrl = deploymentUrl + "/container/endpoints";
+    log.info("Calling Container API : " + containerApiUrl);
+    var endpoints = get(containerApiUrl, {}, "json");
+
+/*
+    var endpoints = {
+        "data": {
+            "urls": {
+                "apis": [{
+                    "context": "/container/endpoints",
+                    "name": "ContainerAPI"
+                }, {
+                    "context": "/endpoints",
+                    "name": "EndpointAPI"
+                }, {
+                    "context": "/hello",
+                    "name": "HelloAPI"
+                }, {
+                    "context": "/plain",
+                    "name": "PlainAPI"
+                }, {
+                    "context": "/account",
+                    "name": "SalesforceAccountAPI"
+                }, {
+                    "context": "/test",
+                    "name": "Test"
+                }],
+                "proxies": [{
+                    "name": "DD",
+                    "wsdl": [
+                        "http://maheekas-macbook-pro-5.local:8290/services/DD?wsdl",
+                        "http://maheekas-macbook-pro-5.local:8290/services/DD?wsdl2"
+                    ]
+                }, {
+                    "name": "HelloProxy",
+                    "wsdl": [
+                        "http://maheekas-macbook-pro-5.local:8290/services/HelloProxy?wsdl",
+                        "http://maheekas-macbook-pro-5.local:8290/services/HelloProxy?wsdl2"
+                    ]
+                }, {
+                    "name": "SalesforceProxy",
+                    "wsdl": [
+                        "http://maheekas-macbook-pro-5.local:8290/services/SalesforceProxy?wsdl",
+                        "http://maheekas-macbook-pro-5.local:8290/services/SalesforceProxy?wsdl2"
+                    ]
+                }]
+            }
+        }
+    };
+*/
+    return endpoints;
+};
+
+JaggeryEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    return ;
+};
+
+DSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+    return ;
+};
+
+
+var getEndpointsExtractor = function(appType) {
+    if (appType == "war") {
+        return new WarEndpointsExtractor();
+    }
+
+    if (appType == "php") {
+        return new PHPEndpointsExtractor();
+    }
+
+    if (appType == "mss") {
+        return new MSSEndpointsExtractor();
+    }
+
+    if (appType == "wso2esb") {
+        return new ESBEndpointsExtractor();
+    }
+
+    if (appType == "jaggery") {
+        return new JaggeryEndpointsExtractor();
+    }
+
+    if (appType == "wso2dataservice") {
+        return new DSSEndpointsExtractor();
+    }
+};
+%>

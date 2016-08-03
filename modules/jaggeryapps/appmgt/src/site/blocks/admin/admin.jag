@@ -58,8 +58,9 @@ var log = new Log('site/blocks/admin/admin.jag');
         var tenantDomain = request.getParameter("tenantDomain");
         var maxAppCount = request.getParameter("maxAppCount");
         var maxDatabaseCount = request.getParameter("maxDatabaseCount");
+        var cloudType = request.getParameter("cloudType");
         try {
-            adminModule.whiteListTenant(tenantDomain, maxAppCount, maxDatabaseCount);
+            adminModule.whiteListTenant(tenantDomain, maxAppCount, maxDatabaseCount, cloudType);
 
             response.status = 200;
             response.content = "White listed the given tenant.";
@@ -80,9 +81,10 @@ var log = new Log('site/blocks/admin/admin.jag');
         }
     } else if (action == "getTenantMaxAppCount") {
         var tenantDomain = request.getParameter("tenantDomain");
+        var cloudType = request.getParameter("cloudType");
 
         try {
-            var maxApplicationCount = adminModule.getTenantAppMaxCount(tenantDomain);
+            var maxApplicationCount = adminModule.getTenantAppMaxCount(tenantDomain, cloudType);
             print(maxApplicationCount);
         } catch (e) {
             response.status = 400;
@@ -107,9 +109,10 @@ var log = new Log('site/blocks/admin/admin.jag');
     } else if (action == "whiteListMaximumDatabaseCount") {
         var tenantDomain = request.getParameter("tenantDomain");
         var maxDatabaseCount = request.getParameter("maxDatabaseCount");
+        var cloudType = request.getParameter("cloudType");
 
         try {
-            adminModule.whiteListMaxDatabaseCount(tenantDomain, maxDatabaseCount);
+            adminModule.whiteListMaxDatabaseCount(tenantDomain, maxDatabaseCount, cloudType);
 
             response.status = 200;
             response.content = "White listed the maximum database count for given tenant.";
@@ -122,9 +125,10 @@ var log = new Log('site/blocks/admin/admin.jag');
     } else if (action == "whiteListMaximumApplicationCount") {
         var tenantDomain = request.getParameter("tenantDomain");
         var maxAppCount = request.getParameter("maxAppCount");
+        var cloudType = request.getParameter("cloudType");
 
         try {
-            adminModule.whiteListMaxApplicationCount(tenantDomain, maxAppCount);
+            adminModule.whiteListMaxApplicationCount(tenantDomain, maxAppCount, cloudType);
 
             response.status = 200;
             response.content = "White listed the maximum application count for given tenant.";
@@ -136,9 +140,10 @@ var log = new Log('site/blocks/admin/admin.jag');
         }
     } else if (action == "getTenantMaxDatabaseCount") {
         var tenantDomain = request.getParameter("tenantDomain");
+        var cloudType = request.getParameter("cloudType");
 
         try {
-            var maxDatabaseCount = adminModule.getTenantMaxDatabaseCount(tenantDomain);
+            var maxDatabaseCount = adminModule.getTenantMaxDatabaseCount(tenantDomain, cloudType);
             print(maxDatabaseCount);
         } catch (e) {
             response.status = 400;

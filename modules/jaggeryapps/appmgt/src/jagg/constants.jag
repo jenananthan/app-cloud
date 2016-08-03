@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -27,7 +27,7 @@ var DOCKER_FILE_NAME = "Dockerfile";
 var TENANT_DOMAIN_NAME = "tenantDomainName";
 var SUPER_TENANT_DOMAIN_NAME = "carbon.super";
 var CLOUD_TYPE = "AppCloud";
-var APP_TYPES_PROPERTIES_CONFIG = "/site/themes/default/templates/apptype/select/app-types-properties.json";
+var APP_TYPES_PROPERTIES_CONFIG = "/jagg/app-types-properties.json";
 var KUB_SERVICE_PORT = 80;
 var KUB_SERVICE_BACKEND_PORT = 8080;
 var KUB_SERVICE_PHP_BACKEND_PORT = 80;
@@ -71,4 +71,12 @@ var PERMISSION_EXECUTE = "ui.execute";
 var LOGIN_PERMISSION = "AppCloud.Login.Permission"
 
 var CLOUD_TYPES_PROPERTIES_CONFIG = "/jagg/cloud-types-properties.json";
+var SELECTED_CLOUD = "SELECTED_CLOUD";
+var APP_CLOUD = "app-cloud";
+var APP_CLOUD_HOSTNAME = "AppCloud.Hostname";
+var INTEGRATION_CLOUD = "integration-cloud";
+var INTEGRATION_CLOUD_HOSTNAME = "IntegrationCloud.Hostname";
+
+//Regex patterns
+var ENV_KEY_REGEX = "^[A-Za-z0-9_]+$";
 %>

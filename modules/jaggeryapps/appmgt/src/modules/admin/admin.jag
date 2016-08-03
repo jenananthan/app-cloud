@@ -77,9 +77,9 @@ var whiteListApplicationVersion = function (applicationName, applicationRevision
     }
 };
 
-var whiteListTenant = function (tenantDomain, maxAppCount, maxDatabaseCount) {
+var whiteListTenant = function (tenantDomain, maxAppCount, maxDatabaseCount, cloudType) {
     var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
-    ApplicationManager.whiteListTenant(tenantId, maxAppCount, maxDatabaseCount);
+    ApplicationManager.whiteListTenant(tenantId, maxAppCount, maxDatabaseCount, cloudType);
 };
 
 var getVersionHashId = function(applicationName, versionName, tenantDomain){
@@ -119,11 +119,11 @@ var getApplicationVersions = function (tenantDomain, applicationName) {
     return applicationVersions;
 };
 
-var getTenantAppMaxCount = function (tenantDomain) {
+var getTenantAppMaxCount = function (tenantDomain, cloudType) {
     var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
     var appCountObj = {};
     try {
-        appCountObj.maxAppCount = ApplicationManager.getMaxAppCountForWhiteListedTenants(tenantId);
+        appCountObj.maxAppCount = ApplicationManager.getMaxAppCountForWhiteListedTenants(tenantId, cloudType);
     } catch (e) {
         log.error("Error while getting maximum application count for tenant : " + tenantDomain);
         log.error(e);
@@ -148,21 +148,21 @@ var updateContainerSpecification = function (tenantDomain, applicationName, appl
     }
 };
 
-var whiteListMaxDatabaseCount = function (tenantDomain, maxDatabaseCount) {
+var whiteListMaxDatabaseCount = function (tenantDomain, maxDatabaseCount, cloudType) {
     var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
-    ApplicationManager.whiteListMaxDatabaseCount(tenantId, maxDatabaseCount);
+    ApplicationManager.whiteListMaxDatabaseCount(tenantId, maxDatabaseCount, cloudType);
 };
 
-var whiteListMaxApplicationCount = function (tenantDomain, maxAppCount) {
+var whiteListMaxApplicationCount = function (tenantDomain, maxAppCount, cloudType) {
     var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
-    ApplicationManager.whiteListMaxAppCount(tenantId, maxAppCount);
+    ApplicationManager.whiteListMaxAppCount(tenantId, maxAppCount, cloudType);
 };
 
-var getTenantMaxDatabaseCount = function (tenantDomain) {
+var getTenantMaxDatabaseCount = function (tenantDomain, cloudType) {
     var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
     var databaseCountObj = {};
     try {
-        databaseCountObj.maxDatabaseCount = ApplicationManager.getMaxDatabaseCountForWhiteListedTenants(tenantId);
+        databaseCountObj.maxDatabaseCount = ApplicationManager.getMaxDatabaseCountForWhiteListedTenants(tenantId, cloudType);
     } catch (e) {
         log.error("Error while getting maximum database count for tenant : " + tenantDomain);
         throw e;

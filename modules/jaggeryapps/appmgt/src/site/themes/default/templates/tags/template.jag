@@ -32,6 +32,13 @@ jagg.template("tags", function(inputs, outputs, jagg) {
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/font-awesome-4.2.0/font-awesome.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/web-fonts/Roboto.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
+    <%
+        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
+    %>
+            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
+    <%
+        }
+    %>
 
  <!-- right pane wrapper -->
  <div class="right-pane">

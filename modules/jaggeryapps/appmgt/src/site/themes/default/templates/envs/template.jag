@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -18,20 +18,28 @@
  */
 
 include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
 
 jagg.template("envs", function(inputs, outputs, jagg) {
     var versionKey = request.getParameter("versionKey");
     var applicationKey = request.getParameter("applicationKey");
     var selectedRevision = outputs.selectedRevision;
+%>
 
-    %>
-     <!-- Bootstrap -->
+      <!-- Bootstrap -->
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/bootstrap-3.2.0/bootstrap.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/font-wso2-1.0.0/css/font-wso2.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/font-awesome-4.2.0/font-awesome.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/web-fonts/Roboto.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/select2-4.0.0/select2.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
+    <%
+        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
+    %>
+            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
+    <%
+        }
+    %>
 
 
  <!-- right pane wrapper -->
@@ -215,19 +223,35 @@ $(document).ready(function() {
             });
         });
 
+        $(document).on('focusout', '.element-key-holder', function() {
+        var updatedKey = $(this).parent().parent().parent().find('.element-key-holder')[0].value;
+        var keyValidation = validateEnvKey(updatedKey);
+            if (!keyValidation.status) { //Validates the Env key is in the K8s accepted format
+                jagg.message({
+                    content: keyValidation.msg,
+                    type: 'error'
+                });
+                return;
+            }
+        });
+
         $(document).on('click', '.fw-save', function() {
             var updatedKey = $(this).parent().parent().parent().find('.element-key-holder')[0].value;
             var updatedValue = $(this).parent().parent().parent().find('.element-value-holder')[0].value;
-
-            //Validation when user submits empty keys and values
-            if (!updatedKey || !updatedValue) {
+            var keyValidation = validateEnvKey(updatedKey);
+            if (!updatedKey || !updatedValue) { //Validation when user submits empty keys and values
                 jagg.message({
                     content: "Please fill necessary details before saving.",
                     type: 'info'
                 });
                 return;
+            } else if (!keyValidation.status) { //Validates the Env key is in the K8s accepted format
+                jagg.message({
+                    content: keyValidation.msg,
+                    type: 'error'
+                });
+                return;
             }
-
             var isNewAddition = $(this).hasClass('save-new-entry');
             if (isNewAddition) {
                 addRuntimeAttribute(updatedKey, updatedValue);

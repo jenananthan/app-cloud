@@ -31,6 +31,7 @@ var log=new Log();
         	mod = jagg.module("user");
         	var userName = request.getParameter("userName");
         	var password = request.getParameter("password");
+            var requestURL = request.getRequestURL();
                var finalResult = {};
                if(!(userName && password)){
                    finalResult.error = "true";
@@ -39,7 +40,7 @@ var log=new Log();
                    return;
                }
         	try {
-        		result=mod.login(userName,password);
+        		result = mod.login(userName, password, requestURL);
         		var parsedJSON = eval('('+result+')');
         		var errorStatus=parsedJSON.error;
         		if(errorStatus === 'false'){

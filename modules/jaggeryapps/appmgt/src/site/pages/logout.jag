@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -18,40 +18,41 @@
  */
 
 include("/jagg/jagg.jag");
-<!--include("/jagg/constants.jag");-->
-var site = require("/site/conf/site.json");
 
-<!--include("/jagg/constants.jag");-->
-        <!--include("/jagg/config_reader.jag");-->
+(function () {
 
-        var security =require("sso");
-        var ssoRelyingParty = new security.SSORelyingParty(site.ssoConfiguration.issuer);
-        try{
-            var samlLogoutRequest = ssoRelyingParty.getSAMLLogoutRequest(jagg.getUser(), session.getId());
-            var encodedRequest = ssoRelyingParty.encode(samlLogoutRequest);
-            var relayState = ssoRelyingParty.getUUID();
-            var idpURL = ssoRelyingParty.getProperty("identityProviderURL");
-        } catch (e) {
-                response.sendRedirect("/appmgt/");
+    var user = jagg.getUser();
+    if (!user) {
+        jagg.includeBlock("sso/filter", {});
+        return;
+    }
+
+    jagg.render({
+        "name":"page/master",
+        "inputs":{
+            "title":"WSO2 App Cloud",
+            "pagePath":"/site/pages/logout.jag",
+            "header":{
+                "name":"header/default"
+            },
+            "body":[
+                {
+                    "name":"layout/master",
+                    "inputs":{
+                        "title":"WSO2 App Cloud",
+                        "middle":[
+                            {
+                                "name":"sso/logout"
+                            }
+                        ]
+                    }
+                }
+            ],"footer":[
+                {
+                    "name":"footer"
+                }
+            ]
         }
-
+    });
+}());
 %>
-
-<div>
-   <p>You are now redirected to Stratos Identity. If the
-   redirection fails, please click the post button.</p>
-
-    <form method="post" action="<%=idpURL%>">
-    <p>
-        <input type="hidden" name="SAMLRequest"
-              value="<%= encodedRequest %>"/>
-        <input type="hidden" name="RelayState" value="<%=relayState%>"/>
-        <button type="submit">POST</button>
-    </p>
-    </form>
-</div>
-
-<script type = "text/javascript" >
-       document.forms[0].submit();
-</script>
-

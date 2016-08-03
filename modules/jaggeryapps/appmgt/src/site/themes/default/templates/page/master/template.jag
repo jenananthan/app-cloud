@@ -35,6 +35,14 @@ jagg.template("page/master", function(inputs, outputs, jagg) {
     <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/select2-4.0.0/select2.override.css'))%>">
     <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
     <link rel="shortcut icon" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('assets/img/favicon.ico'))%>" type="image/x-icon"/>
+    <%
+        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
+    %>
+
+            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
+    <%
+        }
+    %>
 </head>
 
 <!--<body>-->

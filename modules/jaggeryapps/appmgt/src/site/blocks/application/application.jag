@@ -19,7 +19,7 @@
 
 include("/jagg/jagg.jag");
 include('/jagg/constants.jag');
-
+var validator = require('/site/themes/default/js/custom/validator.js');
 var action = request.getParameter("action");
 var applicationModule = jagg.module("application");
 var gitHubAppModule = jagg.module("application/git");
@@ -230,8 +230,6 @@ var log = new Log();
                             appIcon, gitRepoUrl, gitRepoBranch, projectRoot, token,
                             isNewVersion, conSpecMemory, conSpecCpu, appCreationMethod, applicationContext, setDefaultVersion);
                 }
-                logMessage = "Application creation is successfully submitted";
-                log.info(logMessage);
                 response.status = 200;
                 response.content = logMessage;
                 return;
@@ -243,7 +241,7 @@ var log = new Log();
                 return;
             }
         }
-    }else if(action == "stopApplication"){
+    } else if(action == "stopApplication"){
         var applicationName = request.getParameter("applicationName");
         var applicationRevision = request.getParameter("applicationRevision");
         var versionKey = request.getParameter("versionKey");
@@ -312,7 +310,7 @@ var log = new Log();
             response.status = 500;
             response.content = msg;
         }
-    }else if(action == "startApplication"){
+    } else if(action == "startApplication"){
         var applicationName = request.getParameter("applicationName");
         var applicationRevision = request.getParameter("applicationRevision");
         var versionKey = request.getParameter("versionKey");
@@ -326,41 +324,55 @@ var log = new Log();
         if (versions.length > 1) {
             applicationModule.stopOtherVersions(applicationHashId, applicationRevision);
         }
-
         print(stringify(versions));
+
     } else if (action == "getApplicationCreationEvents") {
-        var applicationName = request.getParameter("applicationName");
-        var applicationRevision = request.getParameter("applicationRevision");
+        try {
+            var applicationName = request.getParameter("applicationName");
+            var applicationRevision = request.getParameter("applicationRevision");
+            var mod = jagg.module("application");
+            var events = mod.getApplicationCreationEvents(applicationName, applicationRevision);
+            print(events);
+        } catch (e) {
+            var msg = "Error while getting application creation events for app: " + applicationName +
+                    " and version: " + applicationRevision;
+            log.error(msg);
+            log.error(e);
+            response.status = 500;
+            response.content = msg;
+        }
 
-        var mod = jagg.module("application");
-
-        var events = mod.getApplicationCreationEvents(applicationName, applicationRevision);
-        print(events);
-    }else if (action == "getApplication"){
+    } else if (action == "getApplication"){
         var applicationName = request.getParameter("applicationName");
         var mod = jagg.module("application");
         var applicationHashId = mod.getApplicationHashIdByName(applicationName);
         var application = mod.getApplication(applicationHashId);
         print(application);
-    }else if (action == "getEnvVariablesOfVersion"){
 
+    } else if (action == "getEnvVariablesOfVersion"){
         var versionKey = request.getParameter("versionKey");
         var mod = jagg.module("application");
-
         var events = mod.getEnvVariablesOfVersion(versionKey);
         print(events);
-    }else if (action == "updateRuntimeProperty"){
+
+    } else if (action == "updateRuntimeProperty"){
         var versionKey = request.getParameter("versionKey");
         var prevKey = request.getParameter("prevKey");
         var newKey = request.getParameter("newKey");
         var newValue = request.getParameter("newValue");
+        var keyValidation = validator.validateEnvKey(newKey);
+        if (!keyValidation.status) {
+            response.status = 400;
+            response.content = keyValidation.msg;
+            return;
+        } else {
+            var mod = jagg.module("application");
+            mod.updateRuntimeProperty(versionKey,prevKey,newKey,newValue);
+            response.status = 200;
+            response.content = keyValidation.msg;
+        }
 
-        var mod = jagg.module("application");
-        mod.updateRuntimeProperty(versionKey,prevKey,newKey,newValue);
-        response.status = 200;
-        response.content = "Runtime property successfully updated.";
-
-    }else if (action == "deleteRuntimeProperty"){
+    } else if (action == "deleteRuntimeProperty"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
 
@@ -369,17 +381,23 @@ var log = new Log();
         response.status = 200;
         response.content = "Runtime property successfully deleted.";
 
-    }else if (action == "addRuntimeProperty"){
+    } else if (action == "addRuntimeProperty"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
         var value = request.getParameter("value");
+        var keyValidation = validator.validateEnvKey(key);
+        if (!keyValidation.status) {
+            response.status = 400;
+            response.content = keyValidation.msg;
+            return;
+        } else {
+            var mod = jagg.module("application");
+            mod.addRuntimeProperty(versionKey,key,value);
+            response.status = 200;
+            response.content = keyValidation.msg;
+        }
 
-        var mod = jagg.module("application");
-        mod.addRuntimeProperty(versionKey,key,value);
-        response.status = 200;
-        response.content = "Runtime property successfully added.";
-
-    }else if (action == "downloadFromUrl"){
+    } else if (action == "downloadFromUrl"){
         try {
             log.info("blocks downloadFromUrl");
             var artfactUrl = request.getParameter("artfactUrl");
@@ -395,7 +413,7 @@ var log = new Log();
             response.status = 500;
             response.content = msg;
         }
-    }else if (action == "addTag"){
+    } else if (action == "addTag"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
         var value = request.getParameter("value");
@@ -405,7 +423,7 @@ var log = new Log();
         response.status = 200;
         response.content = "Tag successfully added.";
 
-    }else if (action == "deleteTag"){
+    } else if (action == "deleteTag"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
 
@@ -414,7 +432,7 @@ var log = new Log();
         response.status = 200;
         response.content = "Tag successfully deleted.";
 
-    }else if (action == "updateTag"){
+    } else if (action == "updateTag"){
         var versionKey = request.getParameter("versionKey");
         var prevKey = request.getParameter("prevKey");
         var newKey = request.getParameter("newKey");
@@ -425,11 +443,9 @@ var log = new Log();
         response.status = 200;
         response.content = "Runtime property successfully updated.";
 
-    }else if (action == "getTags"){
-
+    } else if (action == "getTags"){
         var versionKey = request.getParameter("versionKey");
         var mod = jagg.module("application");
-
         var tags = mod.getTags(versionKey);
         print(tags);
 
@@ -463,10 +479,10 @@ var log = new Log();
         var mod = jagg.module("application");
         var applicationHashId = mod.getApplicationHashIdByName(applicationName);
         print(applicationHashId);
+
     } else if (action == "deleteVersion"){
         var versionKey = request.getParameter("versionKey");
         var mod = jagg.module("application");
-
         try {
             mod.deleteVersion(versionKey, false, true);
             print(true);
@@ -491,6 +507,23 @@ var log = new Log();
             response.status = 500;
             response.content = msg;
         }
+
+    } else if (action == "deleteAppCreationEvents"){
+        var applicationName = request.getParameter("applicationName");
+        var applicationRevision = request.getParameter("applicationRevision");
+        var mod = jagg.module("application");
+        var versionHashId = applicationModule.getVersionHashId(applicationName, applicationRevision);
+        try {
+            mod.deleteEventsOfAppVersions(versionHashId);
+            print(true);
+        } catch (e) {
+            var msg = "Error while deleting application creation events for application hash id : " + applicationKey;
+            log.error(msg);
+            log.error(e);
+            response.status = 500;
+            response.content = msg;
+        }
+
     } else if (action == "getSampleArtifactUrl") {
         var appType = request.getParameter("appType");
         var managerModule = jagg.module("manager");
@@ -504,14 +537,13 @@ var log = new Log();
             response.status = 500;
             response.content = msg;
         }
-    } else if (action == "isUploadUrlValid") {
 
+    } else if (action == "isUploadUrlValid") {
         var appTypeName = request.getParameter("appTypeName");
         var appTypeExtension = request.getParameter("appTypeExtension");
         var managerModule = jagg.module("manager");
         var url = request.getParameter("url");
         var currentExtension = url.split(/[. ]+/).pop();
-
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url);
         xhr.send();
@@ -520,11 +552,16 @@ var log = new Log();
         } else {
             print(false);
         }
+    } else if (action == "loadEndpoints") {
+        var deploymentURL = request.getParameter("deploymentURL");
+        var appType = request.getParameter("appType");
+        var mod = jagg.module("application");
+        var endpoints = mod.getEndpointsExtractor(appType).getEndpoints(deploymentURL);
+        print(endpoints);
     } else {
         throw new Error("No action specified for: " + action);
     }
 }());
-
 
 function validateRequired(field, value) {
     if (value == null || value.trim().length == 0) {
@@ -539,20 +576,17 @@ function validateApplicationName(field, value) {
     if (validateRequired(field, value)) {
         return true;
     }
-
     if (!isNaN(value)) {
         response.status = 400;
         response.content = "Bad request : Non-alphanumeric characters are not allowed for " + field;
         return true;
     }
-
-    var patternNonAlphaNumExceptHyphen = /[^\w-]/g;
+    var patternNonAlphaNumExceptHyphen = /[^a-zA-Z\d\-\_ ]/g;
     if (patternNonAlphaNumExceptHyphen.test(value)) {
         response.status = 400;
-        response.content = "Bad request : Application Name has invalid characters. Valid characters are a-z A-Z 0-9 -";
+        response.content = "Bad request : Application Name has invalid characters. Valid characters are [a-z, A-Z, 0-9, _, -]";
         return true;
     }
-
     return false;
 }
 
@@ -560,7 +594,6 @@ function validationApplicationRevision(field, value) {
     if (validateRequired(field, value)) {
         return true;
     }
-
     if (!isNaN(value)) {
         response.status = 400;
         response.content = "Bad request : Invalid version number - Provide version number in format major.minor.patch";
@@ -573,7 +606,6 @@ function validationApplicationRevision(field, value) {
         response.content = "Bad request : Invalid version number - Provide version number in format major.minor.patch";
         return true;
     }
-
     return false;
 }
 
@@ -581,13 +613,11 @@ function validateRequiredAndNumber(field, value) {
     if (validateRequired(field, value)) {
         return true;
     }
-
     if (isNaN(value) || value <= 0) {
         response.status = 400;
         response.content = "Bad request : " + field + " should be a number more than 0";
         return true;
     }
-
     return false;
 }
 %>

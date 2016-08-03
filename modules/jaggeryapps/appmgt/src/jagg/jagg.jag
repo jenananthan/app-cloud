@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -573,6 +573,31 @@ return getThemePath() + path;
         include(getThemeFile(path));
     };
 
+    var getIssuer = function(requestURL) {
+        var selectedCloud = findSelectedCloud(requestURL);
+        if (selectedCloud == INTEGRATION_CLOUD) {
+            return site.ssoConfiguration.integrationIssuer;
+        }
+        return site.ssoConfiguration.issuer;
+    };
+
+    var findSelectedCloud = function(requestURL) {
+        var manager = jagg.module("manager");
+        var integrationCloudHostname = manager.getPropertyValue(INTEGRATION_CLOUD_HOSTNAME);
+        if (requestURL.indexOf(integrationCloudHostname) > -1) {
+            return INTEGRATION_CLOUD;
+        }
+        return APP_CLOUD;
+    };
+
+    var setSelectedCloud = function(requestURL) {
+        session.put(SELECTED_CLOUD, findSelectedCloud(requestURL));
+    };
+
+    var getSelectedCloud = function() {
+        return session.get(SELECTED_CLOUD);
+    };
+
     return {
         setUser:setUser,
         getUser:getUser,
@@ -605,7 +630,10 @@ return getThemePath() + path;
         getUserTheme:getUserTheme,
         getThemeFile:getThemeFile,
         getAppTypePropertyConfFilePath:getAppTypePropertyConfFilePath,
-        getCloudTypePropertyConfFilePath:getCloudTypePropertyConfFilePath
+        getCloudTypePropertyConfFilePath:getCloudTypePropertyConfFilePath,
+        getIssuer:getIssuer,
+        setSelectedCloud:setSelectedCloud,
+        getSelectedCloud:getSelectedCloud
     };
 
 }());

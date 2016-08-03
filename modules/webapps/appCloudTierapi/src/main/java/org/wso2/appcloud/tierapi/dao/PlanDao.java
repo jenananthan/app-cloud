@@ -42,6 +42,15 @@ public interface PlanDao {
 	 */
 	public Plan getPlanByPlanId(int planId) throws SQLException;
 
+    /**
+     * Get plan by plan name and cloud
+     * @param cloudType cloud type
+     * @param planName plan name
+     * @return plan
+     * @throws Exception
+     */
+    public Plan getPlanByPlanName(String cloudType, String planName) throws Exception;
+
 	/*
 	 * Define new Plan.
 	 */

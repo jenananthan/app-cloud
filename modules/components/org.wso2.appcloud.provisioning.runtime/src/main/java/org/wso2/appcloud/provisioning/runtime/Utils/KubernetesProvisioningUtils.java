@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.wso2.appcloud.provisioning.runtime.Utils;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.client.AutoAdaptableKubernetesClient;
 import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.appcloud.common.util.AppCloudUtil;
@@ -42,9 +43,9 @@ public class KubernetesProvisioningUtils {
      *
      * @return Kubernetes client object
      */
-    public static AutoAdaptableKubernetesClient getFabric8KubernetesClient() {
+    public static KubernetesClient getFabric8KubernetesClient() {
 
-        AutoAdaptableKubernetesClient kubernetesClient = null;
+        KubernetesClient kubernetesClient = null;
 
         Config config = new Config();
         config.setUsername(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_MASTER_USERNAME));
@@ -53,7 +54,7 @@ public class KubernetesProvisioningUtils {
                 new String[] { AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_MASTER_URL) });
         config.setMasterUrl(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_MASTER_URL));
         config.setApiVersion(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.PROPERTY_KUB_API_VERSION));
-        kubernetesClient = new AutoAdaptableKubernetesClient(config);
+        kubernetesClient = new DefaultKubernetesClient(config);
 
         return kubernetesClient;
     }
@@ -86,7 +87,7 @@ public class KubernetesProvisioningUtils {
     public static PodList getPods (ApplicationContext applicationContext){
 
         Map<String, String> selector = getLableMap(applicationContext);
-        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
         PodList podList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata()
                 .getName()).pods().withLabels(selector).list();
         return podList;
@@ -100,7 +101,7 @@ public class KubernetesProvisioningUtils {
      */
     public static ServiceList getServices(ApplicationContext applicationContext){
         Map<String, String> selector = getLableMap(applicationContext);
-        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        KubernetesClient kubernetesClient = getFabric8KubernetesClient();
         ServiceList serviceList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata()
                 .getName()).services().withLabels(selector).list();
         return serviceList;
@@ -140,11 +141,21 @@ public class KubernetesProvisioningUtils {
         return (domain).replace(".","-").toLowerCase();
     }
 
-    public static ApplicationContext getApplicationContext(String id, String version, String type, int tenantId,
+    /**
+     * This method generates the application context
+     * @param appName application name
+     * @param version application version
+     * @param type application type
+     * @param tenantId relevant tenant id
+     * @param tenantDomain relevant tenant domain
+     * @param versionHashId hash id of the application
+     * @return application context
+     */
+    public static ApplicationContext getApplicationContext(String appName, String version, String type, int tenantId,
             String tenantDomain, String versionHashId) {
 
         ApplicationContext applicationContext = new ApplicationContext();
-        applicationContext.setId(id);
+        applicationContext.setId(getKubernetesValidAppName(appName));
         applicationContext.setVersion(version);
         applicationContext.setType(type);
         TenantInfo tenantInfo = new TenantInfo();
@@ -153,6 +164,19 @@ public class KubernetesProvisioningUtils {
         applicationContext.setTenantInfo(tenantInfo);
         applicationContext.setVersionHashId(versionHashId);
         return applicationContext;
+    }
+
+    /**
+     * This method converts Kubernetes valid application name
+     * @param applicationName application name provided by user
+     * @return kubernetes valid application name
+     */
+    public static String getKubernetesValidAppName(String applicationName){
+        if(applicationName == null || applicationName.isEmpty()){
+            return null;
+        }
+        applicationName = applicationName.replaceAll("[^a-zA-Z0-9]+", "-");
+        return applicationName;
     }
 
     /**

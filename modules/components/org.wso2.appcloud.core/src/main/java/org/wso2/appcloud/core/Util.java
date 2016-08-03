@@ -77,12 +77,4 @@ public class Util {
         String idString = tenantId + applicationName;
         return Long.toString(Util.hash(idString));
     }
-
-    public static String getRuntimeValidAppName(String applicationName){
-        if(applicationName == null || applicationName.isEmpty()){
-            return null;
-        }
-        applicationName = applicationName.replaceAll("[^a-zA-Z0-9]+", "-");
-        return applicationName;
-    }
 }

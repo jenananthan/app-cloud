@@ -51,6 +51,18 @@ public interface PlanService {
     public Response getPlan(@PathParam("planId") int planId);
 
     /**
+     * Get Plan using Plan name and cloud
+     *
+     * @param cloudType cloud type
+     * @param planName name of the plan
+     * @return {@link Response}
+     */
+    @GET
+    @Path("/{cloudType}/{planName}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getPlan(@PathParam("cloudType") String cloudType, @PathParam("planName") String planName);
+
+    /**
      * Get allowed container specifications using Plan ID
      *
      * @param planId    Plan ID of the plan

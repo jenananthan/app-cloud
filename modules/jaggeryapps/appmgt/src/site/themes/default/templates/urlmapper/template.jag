@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -72,7 +72,7 @@ jagg.template("urlmapper", function (inputs, outputs, jagg) { %>
                  <input type="text" class="form-control mygroup" id="productionCustom" name="productionCustom"
                  placeholder="Enter your custom URL" value="">
                      <span class="input-group-btn">
-                         <button class="btn btn-info" type="button" id="verifyUrl" name="verifyUrl"
+                         <button class="btn btn-info btn-primary" type="button" id="verifyUrl" name="verifyUrl"
                          onclick="verifyCustomUrl()">Verify URL</button>
                      </span>
              </div>

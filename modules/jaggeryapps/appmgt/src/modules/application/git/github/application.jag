@@ -47,9 +47,20 @@ var addApplicationViaGitHub = function (applicationName, versionName, applicatio
                                         gitHubRepoBranch, projectRoot, token, isNewVersion, conSpecMemory, conSpecCpu,
                                         appCreationMethod, applicationContext, setDefaultVersion) {
 
-    log.info("Started creating App => name : " + applicationName + " Version : " + versionName + " Description " +
-             ": " + applicationDescription + " runtimeId : " + runtimeId + " apptype : " + appTypeName + " GitHub url: "
-                     + gitHubRepoUrl + " Branch: " + gitHubRepoBranch);
+    log.info("Started creating App => Name:" + applicationName +
+    " Version:" + versionName +
+    " Description:" + applicationDescription +
+    " RuntimeId:" + runtimeId +
+    " AppType:" + appTypeName +
+    " Runtime Properties:" + JSON.stringify(runtimePropertiesArray) +
+    " Tags:" + JSON.stringify(tagArray) +
+    " App Icon:" + JSON.stringify(appIcon) +
+    " New Version:" + isNewVersion +
+    " Allocated Memory:" + conSpecMemory +
+    " Allocated CPU:" + conSpecCpu +
+    " App Creation Method:" + appCreationMethod +
+    " Context:" + applicationContext +
+    " DefaultVersion:" + setDefaultVersion);
 
     var tenantId = modManager.getTenantId();
     var applicationHashId = Util.getApplicationHashId(applicationName, tenantId);

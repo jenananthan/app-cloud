@@ -259,6 +259,9 @@ jagg.module("application", {
 
     getTaggedApplicationsList: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getTaggedApplicationsList.apply(this, arguments);
+    },
+    getEndpointsExtractor:function () {
+        return jagg.require(jagg.getModulesDir() + "application/endpoints.jag").getEndpointsExtractor.apply(this, arguments);
     }
 });
 %>

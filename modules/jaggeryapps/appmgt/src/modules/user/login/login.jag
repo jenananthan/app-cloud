@@ -27,7 +27,7 @@ var carbon = require('carbon');
 var server = carbon.server;
 var multitenancy = carbon.multitenancy;
 
-function login(userName, password){
+function login(userName, password, requestURL) {
 	var tenantDomain = SUPER_TENANT_DOMAIN_NAME;
 	if (userName.indexOf("@") != -1) {
 		tenantDomain = userName.substring(userName.lastIndexOf('@') + 1);
@@ -65,6 +65,7 @@ function login(userName, password){
             var isUserAuthorized = modManager.checkAuthorizationForUser(userName, permission);
             if (isUserAuthorized){
                 jagg.setUser(userName);
+                jagg.setSelectedCloud(requestURL);
                 finalResult.error="false";
                 finalResult.message="User successfully logged in";
                 finalResult.username=userName;

@@ -1,6 +1,6 @@
 <%
 /*
- * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -62,6 +62,7 @@ jagg.template("home", function(inputs, outputs, jagg) {
     var APPLICATION_RUNNING = "<%=APPLICATION_RUNNING%>";
     var APPLICATION_INACTIVE = "<%=APPLICATION_INACTIVE%>";
     var pageTitle = "<%=outputs.pageTitle%>";
+    var applicationType = "<%=application.applicationType%>";
 </script>
 
     <div class="right-pane">
@@ -95,8 +96,13 @@ jagg.template("home", function(inputs, outputs, jagg) {
                 <p id="app-description"><%=(application.description)?application.description:''%></p>
                 <%if (defaultAppLaunchURL != null) { %>
                 <div class="app-preview-action-bar" id="custom-url-block">
-                    <div class="sec prod-url"><a target="_blank" href="<%=defaultAppLaunchURL%>"><%=defaultAppLaunchURL%></a>
-                    <a href="/appmgt/site/pages/customurl.jag?applicationKey=<%=applicationKey%>&selectedRevision=<%=selectedRevision%>"><i class="fw fw-settings"></i></a>
+                    <div class="sec prod-url" id="launch-default-url-block">
+                        <% if(selectedApplicationRevision.status==APPLICATION_RUNNING){ %>
+                            <a id="launch-default-url-a" target="_blank" href="<%=defaultAppLaunchURL%>"><%=defaultAppLaunchURL%></a>
+                        <% } else { %>
+                            <a id="launch-default-url-a" target="_blank"><%=defaultAppLaunchURL%></a>
+                        <% } %>
+                        <a href="/appmgt/site/pages/customurl.jag?applicationKey=<%=applicationKey%>&selectedRevision=<%=selectedRevision%>"><i class="fw fw-settings"></i></a>
                     </div>
                 </div>
                 <% } %>
@@ -124,8 +130,15 @@ jagg.template("home", function(inputs, outputs, jagg) {
                               </ul>
                           </div>
                           <div id="version-url-link" class="version-url">
-                          <a href="<%=selectedApplicationRevision.deploymentURL%>" target="_blank"><span>
-                          <b>URL : </b><%=selectedApplicationRevision.deploymentURL%></span></a>
+                          <% if(selectedApplicationRevision.status==APPLICATION_RUNNING){ %>
+                            <a id="launch-version-url-a" href="<%=selectedApplicationRevision.deploymentURL%>" target="_blank">
+                                <span><b>URL : </b><%=selectedApplicationRevision.deploymentURL%></span>
+                            </a>
+                          <% } else { %>
+                            <a id="launch-version-url-a" target="_blank">
+                                <span><b>URL : </b><%=selectedApplicationRevision.deploymentURL%></span>
+                            </a>
+                          <% } %>
                           </div>
                           <div class="sec" id="version-app-launch-block">
                               <%
@@ -180,6 +193,11 @@ jagg.template("home", function(inputs, outputs, jagg) {
                               </div>
                           </a>
                       </div>
+                      <% if (application.applicationType == "wso2esb") {%>
+                      <div id="app-type-data" class="col-xs-12 col-md-12 col-lg-12">
+
+                      </div>
+                      <% } %>
                         <div class="col-xs-12 col-md-9 col-lg-9">
                             <div class="block-replica">
                                 <h3>Replicas</h3>
@@ -287,7 +305,6 @@ jagg.template("home", function(inputs, outputs, jagg) {
         var revArry = [];
         for (var x in revisionsSet){
             var rev = x.split(".")[0];
-            console.log(rev);
             revArry.push(rev);
         }
         revArry.sort(function(a, b){return a-b});
