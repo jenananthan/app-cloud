@@ -177,7 +177,7 @@ function as_cluster_setup(){
     cp $CONF_LOCATION/wso2as-5.2.1/repository/conf/security/authenticators.xml $AS_HOME2/repository/conf/security/
     cp -r $PATCH_LOCATION/wso2as-5.2.1/* $AS_HOME1/repository/components/patches/
     cp -r $PATCH_LOCATION/wso2as-5.2.1/* $AS_HOME2/repository/components/patches/
-    
+
     echo "AS cluster setup successfully done!"
 
 }
