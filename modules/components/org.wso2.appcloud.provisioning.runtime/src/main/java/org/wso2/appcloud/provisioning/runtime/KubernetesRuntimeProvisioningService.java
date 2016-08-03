@@ -19,8 +19,7 @@ package org.wso2.appcloud.provisioning.runtime;
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.extensions.*;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.AutoAdaptableKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.kubernetes.client.dsl.PrettyLoggable;
@@ -51,7 +50,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
         this.resourceQuotaLimit = resourceQuotaLimit;
 
         //Creating namespace in kubernetes if not available
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         NamespaceList namespaceList = kubernetesClient.namespaces().list();
         boolean isNamespaceExists = false;
         for (Namespace ns : namespaceList.getItems()) {
@@ -76,7 +75,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
         this.namespace = KubernetesProvisioningUtils.getNameSpace(applicationContext);
 
         //Creating namespace in kubernetes if not available
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         NamespaceList namespaceList = kubernetesClient.namespaces().list();
         boolean isNamespaceExists = false;
         for (Namespace ns : namespaceList.getItems()) {
@@ -104,7 +103,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
 
     @Override
     public void createOrganization(TenantInfo tenantInfo) throws RuntimeProvisioningException {
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         kubernetesClient.namespaces().create(this.namespace);
         kubernetesClient.close();
     }
@@ -116,7 +115,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
 
     @Override
     public void deleteOrganization(TenantInfo tenantInfo) throws RuntimeProvisioningException {
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         kubernetesClient.namespaces().delete(this.namespace);
         kubernetesClient.close();
     }
@@ -137,7 +136,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public List<String> deployApplication(DeploymentConfig config) throws RuntimeProvisioningException {
 
-        KubernetesClient kubClient = null;
+        AutoAdaptableKubernetesClient kubClient = null;
         List<Container> containers = config.getContainers();
         ArrayList<io.fabric8.kubernetes.api.model.Container> kubContainerList = new ArrayList<>();
         List<String> serviceNameList = new ArrayList<>();
@@ -206,7 +205,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
                     .withTemplate(podTemplateSpec)
                     .build();
 
-            Deployment deployment = new DeploymentBuilder().withApiVersion(Deployment.ApiVersion.EXTENSIONS_V_1_BETA_1)
+            Deployment deployment = new DeploymentBuilder()
                     .withKind(KubernetesPovisioningConstants.KIND_DEPLOYMENT)
                     .withMetadata(new ObjectMetaBuilder().withName(config.getDeploymentName().toLowerCase()).build())
                     .withSpec(deploymentSpec)
@@ -283,7 +282,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public boolean getDeploymentStatus(DeploymentConfig config) throws RuntimeProvisioningException {
 
-        DefaultKubernetesClient kubClient = null;
+        AutoAdaptableKubernetesClient kubClient = null;
         DeploymentStatus deploymentStatus = kubClient.inNamespace(namespace.getMetadata().getName())
                 .extensions().deployments().withName(config.getDeploymentName()).get().getStatus();
         //Assuming AF does not do zero replica deployments
@@ -298,7 +297,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
 
         DeploymentLogStream deploymentLogStream = new DeploymentLogStream();
         Map<String, BufferedReader> logOutPut = new HashMap<>();
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         PodList podList = KubernetesProvisioningUtils.getPods(applicationContext);
 	    if (podList != null) {
             try {
@@ -345,7 +344,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public DeploymentLogs getRuntimeLogs(LogQuery query) throws RuntimeProvisioningException {
 
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         DeploymentLogs deploymentLogs = new DeploymentLogs();
         Map<String, String> logOutPut = new HashMap<>();
         PrettyLoggable prettyLoggable;
@@ -439,7 +438,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
         HashMap<String, String> envVariables = new HashMap<>();
 
         //create a instance of kubernetes client to invoke service call
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
 
         List<VolumeMount> volumeMounts = new ArrayList<>();
 
@@ -462,7 +461,6 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
                 } else {
                     Secret secret = new SecretBuilder()
                             .withKind(KubernetesPovisioningConstants.KIND_SECRETS)
-                            .withApiVersion(Secret.ApiVersion.V_1)
                             .withNewMetadata()
                             .withNamespace(namespace.getMetadata().getName())
                             .withLabels(KubernetesProvisioningUtils.getLableMap(applicationContext))
@@ -549,7 +547,6 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
                     log.debug(message);
                 }
                 Secret secret = new SecretBuilder().withKind(KubernetesPovisioningConstants.KIND_SECRETS)
-                        .withApiVersion(Secret.ApiVersion.V_1)
                         .withNewMetadata()
                         .withNamespace(namespace.getMetadata().getNamespace())
                         .withName(runtimeProperty.getName())
@@ -557,7 +554,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
                         .withData(runtimeProperty.getProperties())
                         .build();
 
-                KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+                AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
                 kubernetesClient.secrets().inNamespace(namespace.getMetadata().getName())
                         .withName(runtimeProperty.getName()).replace(secret);
 
@@ -609,7 +606,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public List<RuntimeProperty> getRuntimeProperties() throws RuntimeProvisioningException {
 
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         SecretList secretList = kubernetesClient.secrets().inNamespace(namespace.getMetadata().getName())
                 .withLabels(KubernetesProvisioningUtils.getLableMap(applicationContext)).list();
 
@@ -656,7 +653,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public boolean addCustomDomain(Set<String> domains) throws RuntimeProvisioningException {
 
-        KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         ServiceList serviceList = KubernetesProvisioningUtils.getServices(applicationContext);
         Ingress createdIng;
         boolean created = false;
@@ -664,7 +661,6 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
         for (String domain : domains) {
             for (Service service : serviceList.getItems()) {
                 Ingress ing = new IngressBuilder()
-                        .withApiVersion(Ingress.ApiVersion.EXTENSIONS_V_1_BETA_1)
                         .withKind(KubernetesPovisioningConstants.KIND_INGRESS)
                         .withNewMetadata()
                         .withName(KubernetesProvisioningUtils
@@ -714,7 +710,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public boolean updateCustomDomain(String oldDomain, String newDomain) throws RuntimeProvisioningException {
 
-        KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
 
         ServiceList serviceList = KubernetesProvisioningUtils.getServices(applicationContext);
         boolean deleted = false;
@@ -728,7 +724,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
 
             String newIngName =  KubernetesProvisioningUtils
                     .createIngressMetaName(newDomain);
-            Ingress oldIng = new IngressBuilder().withApiVersion(Ingress.ApiVersion.EXTENSIONS_V_1_BETA_1)
+            Ingress oldIng = new IngressBuilder()
                     .withKind(KubernetesPovisioningConstants.KIND_INGRESS)
                     .withNewMetadata()
                     .withName(oldIngName)
@@ -736,7 +732,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
                     .endMetadata()
                     .build();
 
-            Ingress newIng = new IngressBuilder().withApiVersion(Ingress.ApiVersion.EXTENSIONS_V_1_BETA_1)
+            Ingress newIng = new IngressBuilder()
                     .withKind(KubernetesPovisioningConstants.KIND_INGRESS)
                     .withNewMetadata()
                     .withName(newIngName)
@@ -786,7 +782,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public Set<String> getCustomDomains() throws RuntimeProvisioningException {
 
-        KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         Set<String> domains = new HashSet<>();
 
         IngressList ingressList = kubClient.extensions().ingress().
@@ -805,7 +801,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
      */
     @Override
     public boolean deleteCustomDomain(String domain) throws RuntimeProvisioningException {
-        KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
 
         ServiceList serviceList = KubernetesProvisioningUtils.getServices(applicationContext);
         boolean deleted = false;
@@ -814,7 +810,6 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
             String ingName = KubernetesProvisioningUtils
                     .createIngressMetaName(domain);
             Ingress ing = new IngressBuilder()
-                    .withApiVersion(Ingress.ApiVersion.EXTENSIONS_V_1_BETA_1)
                     .withKind(KubernetesPovisioningConstants.KIND_INGRESS)
                     .withNewMetadata()
                     .withName(ingName)
@@ -834,7 +829,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     @Override
     public boolean createDeploymentUrl(String environmentUrl) throws RuntimeProvisioningException {
 
-        KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         ServiceList serviceList = KubernetesProvisioningUtils.getServices(applicationContext);
         if (log.isDebugEnabled()){
             log.debug("Deployment service List size: " + serviceList.getItems().size());
@@ -855,7 +850,6 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
             }
             String ingressName = environmentUrl + "-" + service.getMetadata().getName();
             Ingress ing = new IngressBuilder()
-                    .withApiVersion(Ingress.ApiVersion.EXTENSIONS_V_1_BETA_1)
                     .withKind(KubernetesPovisioningConstants.KIND_INGRESS)
                     .withNewMetadata()
                     .withName(KubernetesProvisioningUtils.createIngressMetaName(ingressName))
@@ -931,7 +925,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
      * @param k8sKind k8s object type
      */
     public void deleteK8sKind(String k8sKind) throws RuntimeProvisioningException {
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         String namespace = this.namespace.getMetadata().getName();
         Map<String, String> labels = KubernetesProvisioningUtils.getDeleteLables(applicationContext);
 
@@ -969,8 +963,9 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
     /**
      * {@inheritDoc}
      */
-    @Override public void deleteK8sKindByName(String k8sKind, String name) throws RuntimeProvisioningException {
-        KubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+    @Override
+    public void deleteK8sKindByName(String k8sKind, String name) throws RuntimeProvisioningException {
+        AutoAdaptableKubernetesClient kubernetesClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
         String namespace = this.namespace.getMetadata().getName();
 
         if (log.isDebugEnabled()) {
@@ -1018,7 +1013,7 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
         String namespace = this.namespace.getMetadata().getName();
 
         try {
-            KubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
+            AutoAdaptableKubernetesClient kubClient = KubernetesProvisioningUtils.getFabric8KubernetesClient();
             kubClient.inNamespace(namespace).services().create(service);
         } catch (KubernetesClientException e) {
             String message = "Error while creating kubernetes kind service with namespace : " + namespace;

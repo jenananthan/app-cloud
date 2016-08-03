@@ -28,7 +28,7 @@ import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.ServicePortBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.AutoAdaptableKubernetesClient;
 import org.wso2.appcloud.provisioning.runtime.Utils.KubernetesProvisioningUtils;
 import org.wso2.appcloud.provisioning.runtime.KubernetesPovisioningConstants;
 import org.wso2.appcloud.provisioning.runtime.beans.ApplicationContext;
@@ -40,7 +40,7 @@ import java.util.Map;
 public class TestUtils {
 
     private ApplicationContext appCtx;
-    private KubernetesClient kube;
+    private AutoAdaptableKubernetesClient kube;
 
     public TestUtils() {
         setAppCtx(getApplicationContext());
@@ -57,7 +57,6 @@ public class TestUtils {
         labelsMap.put("app", getAppCtx().getId());
         labelsMap.put("version", getAppCtx().getVersion());
         Service service = new ServiceBuilder()
-                .withApiVersion(Service.ApiVersion.V_1)
                 .withKind(KubernetesPovisioningConstants.KIND_SERVICE)
                 .withNewMetadata()
                 .withName((getAppCtx().getId() + "-" + getAppCtx().getVersion().replace(".","-")).toLowerCase())
@@ -81,7 +80,6 @@ public class TestUtils {
         labelsMap.put("app", getAppCtx().getId());
         labelsMap.put("version", getAppCtx().getVersion());
         Deployment deployment = new DeploymentBuilder()
-                .withApiVersion(Deployment.ApiVersion.EXTENSIONS_V_1_BETA_1)
                 .withKind("Deployment")
                 .withNewMetadata()
                 .withName((getAppCtx().getId() + "-" + getAppCtx().getVersion().replace(".","-")).toLowerCase())
