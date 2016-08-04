@@ -60,7 +60,7 @@ public class DatabaseTestCase {
         defaultAdminPassword = AppCloudIntegrationTestUtils.getAdminPassword();
         tenantDomain = AppCloudIntegrationTestUtils.getPropertyValue(AppCloudIntegrationTestConstants
                                                                              .DEFAULT_TENANT_TENANT_DOMAIN);
-        dbNameWithTenantName = dbName + AppCloudIntegrationTestConstants.PARAM_UNDERSCORE + tenantDomain;
+        dbNameWithTenantName = dbName + AppCloudIntegrationTestConstants.PARAM_UNDERSCORE + tenantDomain.replace(".", "_");
         databaseClient = new DatabaseClient(serverUrl, defaultAdmin, defaultAdminPassword);
 
     }
