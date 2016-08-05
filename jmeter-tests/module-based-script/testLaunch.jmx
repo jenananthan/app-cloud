@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright (c) 2016, WSO2 Inc. (http://wso2.com) All Rights Reserved.
   ~
@@ -13,7 +14,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
