@@ -9,4 +9,4 @@ format of
 5. Update the file_dir_path with your artifact location. And update the line number 11 of the file CreateWars.sh based on your artifact, inorder to create new artifacts for each requests.
 6. Update below properties
 	working_dir - (jmeter script location) - appfactory/2.0.0/jmeter-tests/module-based-script
-
+Set thread count to the max no of apps can create in the setup and loop count to any number. Thread count * Loop count will be the load of this load test.
