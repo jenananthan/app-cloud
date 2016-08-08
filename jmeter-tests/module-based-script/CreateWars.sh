@@ -27,6 +27,6 @@ cd $1\/$2
 cp $1\/$3 .
 unzip -d tmp $3
 cd tmp
-sed -i -e "s/<title>.*<\/title>/<title>Load Testing $2<\/title>/g" index.html
-zip -r $1\/$2.war *
+sed -i -e "s/<h1>My first PHP page<\/h1>/<h1>My first PHP page Load Testing $2<\/h1>/g" index.php
+zip -r $1\/$2.zip *
 rm -r $1\/$2

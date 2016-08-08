@@ -252,7 +252,7 @@ var log = new Log();
     } else if(action == "stopApplication"){
         var applicationName = request.getParameter("applicationName");
         var applicationRevision = request.getParameter("applicationRevision");
-        var versionKey = request.getParameter("versionKey");
+        var versionKey = applicationModule.getVersionHashId(applicationName, applicationRevision);
         var podDeleteTimeOut = modManager.getPropertyValue(POD_DELETE_TIMEOUT);
         var applicationHashId = applicationModule.getApplicationHashIdByName(applicationName);
         var applicationType = applicationModule.getApplication(applicationHashId).applicationType;
