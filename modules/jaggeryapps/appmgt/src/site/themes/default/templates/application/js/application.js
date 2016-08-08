@@ -92,6 +92,7 @@ $(document).on('change focusout keyup', '.element-add-key', function () {
 });
 
 $(document).on('click', '.btn-primary-add-val', function () {
+    activateCreateApplication();
     var addBlock = $(this).parent().parent();
     var key = addBlock.find('.element-add-key')[0].value;
     var value = addBlock.find('.element-add-value')[0].value;

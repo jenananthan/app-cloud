@@ -16,6 +16,7 @@
  *   under the License.
  */
 // page initialization
+var timerId;
 $(document).ready(function() {
     // add upload app icon listener
     $("#change_app_icon").change(function(event) {
@@ -31,6 +32,9 @@ $(document).ready(function() {
     if(selectedApplicationRevision.status==APPLICATION_INACTIVE){
         displayApplicationInactiveMessage();
     }
+
+    var deploymentURL = selectedApplicationRevision.deploymentURL;
+    timerId = setInterval(function(){ loadEndpoints(deploymentURL, applicationType); }, 3000);
 });
 
 // wrapping functions
@@ -56,11 +60,6 @@ function initPageView() {
 
     listTags();
     listEnvs();
-
-    if (selectedApplicationRevision.status == APPLICATION_RUNNING) {
-        loadEndpoints(deploymentURL, applicationType);
-    }
-
 }
 
 function loadEndpoints(deploymentURL, applicationType) {
@@ -70,62 +69,99 @@ function loadEndpoints(deploymentURL, applicationType) {
      deploymentURL: deploymentURL
      }, function(result) {
         var endpoints = JSON.parse(result);
-        var html_1 = '<div class="block-endpoints">'+
-            '<h3>Endpoints</h3>'+
-            '<h4>SOAP Services</h4>'+
-            '<table class="table table-responsive">'+
-            '<thead class="thead">'+
-            '<tr>'+
-            '<th>Name</th>'+
-            '<th>WSDL</th>'+
-            '<th>WSDL2</th>'+
-            '</tr>'+
-            '</thead>'+
-            '<tbody>';
+        if (endpoints == undefined) {
+            $("#app-type-data").html('<div class="block-endpoints-init"><h3>Endpoints &nbsp;' +
+                '<span> ' +
+                '<i class="fw fw-spin fw-loader4"></i>'+
+                '</span></h3></div>');
+        } else {
+            var html_1 = '<div class="block-endpoints">' +
+                '<h3>Endpoints</h3>';
 
-        var html_2;
-        for (var i=0; i < endpoints.data.urls.proxies.length; i++) {
-            var proxy = endpoints.data.urls.proxies[i];
-            html_2 = '<tr>'+
-                '<td>' + proxy.name+'</td>'+
-                '<td><a href="' +proxy.wsdl[1]+ '">'+proxy.wsdl[1] +'</a></td>'+
-                '<td><a href="'+proxy.wsdl[0]+'">'+proxy.wsdl[0]+'</a></td>'+
-                '</tr>';
-        }
+            var html_2 = "";
+            if(endpoints.data.urls.proxies != null) {
+                html_2 += '<h4><i class="fw fw-soap fw-2x"></i> &nbsp; SOAP Services</h4>' +
+                    '<table class="table table-responsive">' +
+                    '<thead class="thead">' +
+                    '<tr>' +
+                    '<th width="20%">Name</th>' +
+                    '<th>WSDL</th>' +
+                    '<th>WSDL2</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>';
+                if (Array.isArray(endpoints.data.urls.proxies)) {
+                    for (var i = 0; i < endpoints.data.urls.proxies.length; i++) {
+                        var proxy = endpoints.data.urls.proxies[i];
+                        var wsdl1 = deploymentURL + "/" + (proxy.wsdl[0]).substring((proxy.wsdl[0]).indexOf('services'));
+                        var wsdl2 = deploymentURL + "/" + (proxy.wsdl[1]).substring((proxy.wsdl[1]).indexOf('services'));
 
-        var html_3 =
-            '</tbody>'+
-            '</table>'+
-
-            '<h4>REST APIs</h4>'+
-            '<table class="table table-responsive">'+
-            '<thead class="thead">'+
-            '<tr>'+
-            '<th>Name</th>'+
-            '<th>URL</th>'+
-            '</tr>'+
-            '</thead>'+
-            '<tbody>';
+                        html_2 += '<tr>' +
+                            '<td>' + proxy.name + '</td>' +
+                            '<td><a href="' + wsdl1 + '" target="_blank">' + wsdl1 + '</a></td>' +
+                            '<td><a href="' + wsdl2 + '" target="_blank">' + wsdl2 + '</a></td>' +
+                            '</tr>';
+                    }
 
 
-        var html_4;
-        for (var j=0; j < endpoints.data.urls.apis.length; j++) {
-            var api = endpoints.data.urls.apis[j];
-            var url = deploymentURL + api.context;
-            if (api.name != "ContainerAPI") {
+                } else {
+                    var proxy = endpoints.data.urls.proxies;
+                    var wsdl1 = deploymentURL + "/" + (proxy.wsdl[0]).substring((proxy.wsdl[0]).indexOf('services'));
+                    var wsdl2 = deploymentURL + "/" + (proxy.wsdl[1]).substring((proxy.wsdl[1]).indexOf('services'));
 
-                html_4 = '<tr>' +
-                    '<td>'+ api.name +'</td>'+
-                    '<td><a href="' + url+ '">' + url + '</a></td>'+
-                    '</tr>';
+                    html_2 += '<tr>' +
+                        '<td>' + proxy.name + '</td>' +
+                        '<td><a href="' + wsdl1 + '" target="_blank">' + wsdl1 + '</a></td>' +
+                        '<td><a href="' + wsdl2 + '" target="_blank">' + wsdl2 + '</a></td>' +
+                        '</tr>';
+                }
+                html_2 += '</tbody>' +
+                    '</table>';
             }
+
+            var html_3 = "";
+            if (endpoints.data.urls.apis != null) {
+                var api_header = '<h4><i class="fw fw-rest-api fw-2x"></i> &nbsp; REST APIs</h4>' +
+                    '<table class="table table-responsive">' +
+                    '<thead class="thead">' +
+                    '<tr>' +
+                    '<th width="20%">Name</th>' +
+                    '<th>URL</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>';
+
+                if (Array.isArray(endpoints.data.urls.apis)) {
+                    for (var j = 0; j < endpoints.data.urls.apis.length; j++) {
+                        var api = endpoints.data.urls.apis[j];
+                        var url = deploymentURL + api.context;
+                        if (api.name != "ContainerAPI") {
+                            html_3 += '<tr>' +
+                                '<td>' + api.name + '</td>' +
+                                '<td><a href="' + url + '" target="_blank">' + url + '</a></td>' +
+                                '</tr>';
+                        }
+                    }
+                } else {
+                    var api = endpoints.data.urls.apis;
+                    var url = deploymentURL + api.context;
+                    if (api.name != "ContainerAPI") {
+                        html_3 += '<tr>' +
+                            '<td>' + api.name + '</td>' +
+                            '<td><a href="' + url + '" target="_blank">' + url + '</a></td>' +
+                            '</tr>';
+                    }
+                }
+
+                if (html_3 != "") {
+                    html_3 = api_header + html_3 + '</tbody></table>';
+                }
+            }
+
+            var html_4 = '</div>';
+            $("#app-type-data").html(html_1 + html_2 + html_3 + html_4);
+            clearInterval(timerId);
         }
-
-        var html_5 =       '</tbody>'+
-            '</table>'+
-            '</div>';
-
-        $("#app-type-data").html(html_1 + html_2 + html_3 + html_4 + html_5);
 
      }, function(jqXHR, data, errorThrown) {
 
@@ -325,7 +361,6 @@ function changeSelectedRevision(newRevision){
                                  'data-toggle="tooltip" title="Adding replicas to your application will not support in this release."></i>' +
                                  '</span></figcaption></figure></div>');
 
-        loadEndpoints(deploymentURL, applicationType);
     } else if(selectedApplicationRevision.status == APPLICATION_STOPPED || selectedApplicationRevision.status == APPLICATION_INACTIVE){
 
         $('#launch-default-url-block').empty();
@@ -465,10 +500,7 @@ function deleteApplication(){
         versionKey:selectedApplicationRevision.hashId
     },function (result) {
         jagg.message({content: "Selected version deleted successfully", type: 'success', id:'view_log'});
-        var versionCount = 0;
-        for (var version in application.versions){
-            versionCount++;
-        }
+        var versionCount = getVersionCount();
         if(versionCount == 1){
             setTimeout(redirectAppListing, 2000);
         } else {
@@ -480,11 +512,27 @@ function deleteApplication(){
 }
 
 function deleteApplicationPopUp(){
-    jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Application Version',content:'Are you sure you want to delete this version:' + selectedRevision + ' ?',
-                        okCallback:function(){
-                            deleteApplication();
-                        }, cancelCallback:function(){}
-                    });
+    var versionCount = getVersionCount();
+    if(versionCount == 1){
+        jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Application Version',content:'You are about to delete the only available version of your application, are you sure you want to delete this "' + selectedRevision + '" version ?',
+            okCallback:function(){
+                deleteApplication();
+            }
+        });
+    } else if (versionCount > 1 && (selectedRevision == application.defaultVersion)) {
+        jagg.message({
+            type:'warning', modalStatus: true, title:'Delete Application Version',
+            content:'This version:' + selectedRevision + ' is set as the default version of the application. If you '
+            + 'really want to delete this please select some other version as the default version',
+            timeout: 8000
+        });
+    } else {
+        jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Application Version',content:'Are you sure you want to delete this version:' + selectedRevision + ' ?',
+            okCallback:function(){
+                deleteApplication();
+            }, cancelCallback:function(){}
+        });
+    }
 }
 
 function redirectAppListing() {
@@ -493,4 +541,12 @@ function redirectAppListing() {
 
 function redirectAppHome() {
     window.location.replace("home.jag?applicationKey=" + applicationKey);
+}
+
+function getVersionCount(){
+    var versionCount = 0;
+    for (var version in application.versions){
+        versionCount++;
+    }
+    return versionCount;
 }

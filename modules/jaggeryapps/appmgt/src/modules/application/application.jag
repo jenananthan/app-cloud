@@ -176,7 +176,7 @@ var pushDockerImage = function (applicationName, versionName, applicationRuntime
         log.error(msg);
         log.error(e);
         log.info("Application creation failed because docker image push failed and roll back process" +
-                 " is started for application : "+applicationName+" with revision : "+versionName);
+                 " is started for application : " + applicationName + " with revision : "+versionName);
         deleteVersion(versionHashId, true, false);
         throw e;
     }
@@ -214,7 +214,7 @@ var buildDockerImage = function (applicationName, versionName, runtimeId, absFil
                 addEvent(DOCKER_IMAGE_BUILD, EVENT_SUCCEEDED, msg, versionHashId);
                 return true;
             } catch (e){
-                log.error("Error occured while building image, Hence retrying...");
+                log.error("Error occurred while building image, Hence retrying...");
             }
         }
 

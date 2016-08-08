@@ -93,55 +93,12 @@ MSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
 
 ESBEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
     var containerApiUrl = deploymentUrl + "/container/endpoints";
-    log.info("Calling Container API : " + containerApiUrl);
-    var endpoints = get(containerApiUrl, {}, "json");
-
-/*
-    var endpoints = {
-        "data": {
-            "urls": {
-                "apis": [{
-                    "context": "/container/endpoints",
-                    "name": "ContainerAPI"
-                }, {
-                    "context": "/endpoints",
-                    "name": "EndpointAPI"
-                }, {
-                    "context": "/hello",
-                    "name": "HelloAPI"
-                }, {
-                    "context": "/plain",
-                    "name": "PlainAPI"
-                }, {
-                    "context": "/account",
-                    "name": "SalesforceAccountAPI"
-                }, {
-                    "context": "/test",
-                    "name": "Test"
-                }],
-                "proxies": [{
-                    "name": "DD",
-                    "wsdl": [
-                        "http://maheekas-macbook-pro-5.local:8290/services/DD?wsdl",
-                        "http://maheekas-macbook-pro-5.local:8290/services/DD?wsdl2"
-                    ]
-                }, {
-                    "name": "HelloProxy",
-                    "wsdl": [
-                        "http://maheekas-macbook-pro-5.local:8290/services/HelloProxy?wsdl",
-                        "http://maheekas-macbook-pro-5.local:8290/services/HelloProxy?wsdl2"
-                    ]
-                }, {
-                    "name": "SalesforceProxy",
-                    "wsdl": [
-                        "http://maheekas-macbook-pro-5.local:8290/services/SalesforceProxy?wsdl",
-                        "http://maheekas-macbook-pro-5.local:8290/services/SalesforceProxy?wsdl2"
-                    ]
-                }]
-            }
-        }
-    };
-*/
+    var endpoints = undefined;
+    try {
+        endpoints = get(containerApiUrl, {}, "json");
+    } catch(e) {
+        return endpoints;
+    }
     return endpoints;
 };
 

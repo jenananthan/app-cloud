@@ -139,8 +139,9 @@ function as_setup(){
     mkdir -p $1/repository/conf/appcloud
     cp $CONF_LOCATION/$AS_VERSION/repository/conf/appcloud/appcloud.properties $1/repository/conf/appcloud/
     cp $CONF_LOCATION/$AS_VERSION/repository/conf/carbon.xml $1/repository/conf/
+    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $1/repository/conf/security/
+    cp -r $PATCH_LOCATION/$AS_VERSION/* $1/repository/components/patches/
     cp $CONF_LOCATION/$AS_VERSION/bin/wso2server.sh $1/bin/
-
     cp -r $APP_CLOUD_SRC_HOME/modules/webapps/appCloudTierapi/target/tierapi.war $1/repository/deployment/server/webapps/
 
     sed -i -e "s|AS_HOME|$1|g" $1/repository/conf/appcloud/appcloud.properties
@@ -172,6 +173,12 @@ function as_cluster_setup(){
 
     sed -i -e "s/https:\/\/localhost:9443\/appmgt\/jagg\/jaggery_acs.jag/http:\/\/$IP\/appmgt\/jagg\/jaggery_acs.jag/g" $IS_HOME/repository/conf/security/sso-idp-config.xml
 
+    cp $CONF_LOCATION/$AS_VERSION/repository/conf/axis2/axis2.xml $AS_HOME1/repository/conf/axis2/
+    cp $CONF_LOCATION/$AS_VERSION/repository/conf/axis2/axis2.xml $AS_HOME2/repository/conf/axis2/
+    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $AS_HOME1/repository/conf/security/
+    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $AS_HOME2/repository/conf/security/
+    cp -r $PATCH_LOCATION/$AS_VERSION/* $AS_HOME1/repository/components/patches/
+    cp -r $PATCH_LOCATION/$AS_VERSION/* $AS_HOME2/repository/components/patches/
 
     echo "AS cluster setup successfully done!"
 
@@ -197,7 +204,7 @@ cp $CONF_LOCATION/$IS_VERSION/repository/conf/security/sso-idp-config.xml $IS_HO
 
 
 echo "Updaing AS node with new configurations"
-read -p "Do you wish to do a clustered setup?" yn
+read -p "Do you wish to do a clustered setup[y/n]:" yn
      case $yn in
          [Yy]* ) as_cluster_setup;;
          [Nn]* ) as_non_cluster_setup;;
