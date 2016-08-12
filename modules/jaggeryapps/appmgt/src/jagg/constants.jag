@@ -32,7 +32,11 @@ var KUB_SERVICE_PORT = 80;
 var KUB_SERVICE_BACKEND_PORT = 8080;
 var KUB_SERVICE_PHP_BACKEND_PORT = 80;
 var KUB_SERVICE_PROTOCOL = "TCP";
-var DASHBOARD_BASE_URL="https://analytics.cloud.wso2.com/monitoring/webapps/";
+var DASHBOARD_BASE_URL = "Dashboard.Url";
+var APP_CLOUD_URL = "AppCloud.Url";
+var INTEGRATION_CLOUD_URL = "IntegrationCloud.Url";
+var API_CLOUD_PUBLISHER__URL = "APICloud.Publisher.Url";
+var CLOUD_MGT_URL = "CloudMgt.Url";
 var NOT_ALLOWED_ENV_VARIABLES = "EnvironmentVariables.NotAllowedVariables";
 var POD_DELETE_TIMEOUT = "Pod.Delete.Timeout";
 var POD_DELETE_WAIT = "Pod.Delete.Wait";
@@ -51,6 +55,8 @@ var KUBE_DEPLOY = "Initializing deployment";
 var STOP_CONTAINERS = "Stopping Containers";
 var INGRESS = "Creating ingress";
 var POD_STATUS = "Status";
+
+var DEFAULT_TEMPLATE = 'DEFAULT_ALL_PERMISSIONS';
 
 var EVENT_SUCCEEDED = "success";
 var EVENT_PENDING = "pending";

@@ -110,11 +110,13 @@ public class ApplicationDAO {
                 }
             }
 
-            InputStream iconInputStream = null;
+            InputStream iconInputStream;
             if (application.getIcon() != null) {
                 iconInputStream = IOUtils.toBufferedInputStream(application.getIcon().getBinaryStream());
+                if (iconInputStream.available() != 0) {
+                    updateApplicationIcon(dbConnection, iconInputStream, applicationId, tenantId);
+                }
             }
-            updateApplicationIcon(dbConnection, iconInputStream, applicationId, tenantId);
 
         } catch (SQLException e) {
 

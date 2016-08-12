@@ -18,17 +18,24 @@ package org.wso2.appcloud.provisioning.runtime.Utils;
 
 import io.fabric8.kubernetes.api.KubernetesHelper;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.extensions.Deployment;
+import io.fabric8.kubernetes.api.model.extensions.DeploymentList;
+import io.fabric8.kubernetes.api.model.extensions.Ingress;
+import io.fabric8.kubernetes.api.model.extensions.IngressList;
 import io.fabric8.kubernetes.client.AutoAdaptableKubernetesClient;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import org.apache.commons.collections.functors.ExceptionClosure;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.appcloud.common.util.AppCloudUtil;
 import org.wso2.appcloud.provisioning.runtime.KubernetesPovisioningConstants;
+import org.wso2.appcloud.provisioning.runtime.RuntimeProvisioningException;
 import org.wso2.appcloud.provisioning.runtime.beans.ApplicationContext;
 import org.wso2.appcloud.provisioning.runtime.beans.TenantInfo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,6 +98,66 @@ public class KubernetesProvisioningUtils {
         PodList podList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata()
                 .getName()).pods().withLabels(selector).list();
         return podList;
+    }
+
+	/**
+     * This utility method will provide the list of deployments for particular application.
+     *
+     * @param applicationContext
+     * @return
+     */
+    public static DeploymentList getDeployments (ApplicationContext applicationContext){
+
+        Map<String, String> selector = getLableMap(applicationContext);
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        DeploymentList deploymentList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
+                                                        .extensions().deployments().withLabels(selector).list();
+        return deploymentList;
+    }
+
+	/**
+     * This utility method will provide the list of replication controllers for particular application.
+     *
+     * @param applicationContext
+     * @return
+     */
+    public static ReplicationControllerList getReplicationControllers (ApplicationContext applicationContext){
+
+        Map<String, String> selector = getLableMap(applicationContext);
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        ReplicationControllerList rcList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
+                                                           .replicationControllers().withLabels(selector).list();
+        return rcList;
+    }
+
+	/**
+     * This utility method will provide the list of ingresses for particular application.
+     *
+     * @param applicationContext
+     * @return
+     */
+    public static IngressList getIngresses (ApplicationContext applicationContext){
+
+        Map<String, String> selector = getLableMap(applicationContext);
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        IngressList ingressList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
+                                                  .extensions().ingress().withLabels(selector).list();
+        return ingressList;
+    }
+
+	/**
+     * This utility method will provide the list of secrets for particular application.
+     *
+     * @param applicationContext
+     * @return
+     */
+    public static SecretList getSecrets (ApplicationContext applicationContext){
+
+        Map<String, String> selector = getLableMap(applicationContext);
+        AutoAdaptableKubernetesClient kubernetesClient = getFabric8KubernetesClient();
+        SecretList secretList = kubernetesClient.inNamespace(getNameSpace(applicationContext).getMetadata().getName())
+                                                .secrets().withLabels(selector).list();
+        return secretList;
     }
 
     /**
@@ -214,5 +281,155 @@ public class KubernetesProvisioningUtils {
         }
         return status;
 
+    }
+
+    public static boolean waitForPodToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isPodDeleted = false;
+        try {
+            //Maximum waiting time to check if the pod gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.POD_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if pod has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.POD_DELETE_WAIT));
+
+            for(int podDeleteWaitCounter = 0; podDeleteWaitCounter < timeOut; podDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<Pod> podList = getPods(applicationContext).getItems();
+                if ((podList != null) && (podList.size() == 0)) {
+                    isPodDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete pods list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isPodDeleted;
+    }
+
+    public static boolean waitForDeploymentToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isDeploymentDeleted = false;
+        try {
+            //Maximum waiting time to check if the deployement gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.DEPLOYMENT_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if deployement has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.DEPLOYMENT_DELETE_WAIT));
+
+            for(int deploymentDeleteWaitCounter = 0; deploymentDeleteWaitCounter < timeOut; deploymentDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<Deployment> deploymentList = getDeployments(applicationContext).getItems();
+                if ((deploymentList != null) && (deploymentList.size() == 0)) {
+                    isDeploymentDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete deployment list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isDeploymentDeleted;
+    }
+
+    public static boolean waitForRCToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isRCDeleted = false;
+        try {
+            //Maximum waiting time to check if the RC gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.RC_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if RC has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.RC_DELETE_WAIT));
+
+            for(int rcDeleteWaitCounter = 0; rcDeleteWaitCounter < timeOut; rcDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<ReplicationController> replicationControllerList = getReplicationControllers(applicationContext).getItems();
+                if ((replicationControllerList != null) && (replicationControllerList.size() == 0)) {
+                    isRCDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete replication controller list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isRCDeleted;
+    }
+
+    public static boolean waitForServiceToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isServiceDeleted = false;
+        try {
+            //Maximum waiting time to check if the service gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.SERVICE_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if service has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.SERVICE_DELETE_WAIT));
+
+            for(int serviceDeleteWaitCounter = 0; serviceDeleteWaitCounter < timeOut; serviceDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<Service> serviceList = getServices(applicationContext).getItems();
+                if ((serviceList != null) && (serviceList.size() == 0)) {
+                    isServiceDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete services list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isServiceDeleted;
+    }
+
+    public static boolean waitForIngressesToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isIngressDeleted = false;
+        try {
+            //Maximum waiting time to check if the ingress gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.INGRESS_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if ingress has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.INGRESS_DELETE_WAIT));
+
+            for(int ingressDeleteWaitCounter = 0; ingressDeleteWaitCounter < timeOut; ingressDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<Ingress> ingressList = getIngresses(applicationContext).getItems();
+                if ((ingressList != null) && (ingressList.size() == 0)) {
+                    isIngressDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete ingresses list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isIngressDeleted;
+    }
+
+    public static boolean waitForSecretToGetDeleted(ApplicationContext applicationContext) throws RuntimeProvisioningException {
+        boolean isSecretDeleted = false;
+        try {
+            //Maximum waiting time to check if the secrets gets completely deleted (in milliseconds)
+            int timeOut = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.SECRET_DELETE_TIMEOUT));
+            //Waiting time between calls made to check if secrets has been deleted (in milliseconds)
+            int waitTimePeriod = Integer.parseInt(AppCloudUtil.getPropertyValue(KubernetesPovisioningConstants.SECRET_DELETE_WAIT));
+
+            for(int secretDeleteWaitCounter = 0; secretDeleteWaitCounter < timeOut; secretDeleteWaitCounter += waitTimePeriod){
+                java.lang.Thread.sleep(waitTimePeriod);
+                List<Secret> secretList = getSecrets(applicationContext).getItems();
+                if ((secretList != null) && (secretList.size() == 0)) {
+                    isSecretDeleted = true;
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            String msg = "Error while waiting until delete secrets list for application: " + applicationContext.getId() + " and version: " + applicationContext.getVersion();
+            log.error(msg, e);
+            throw new RuntimeProvisioningException(msg, e);
+        }
+
+        return isSecretDeleted;
     }
 }

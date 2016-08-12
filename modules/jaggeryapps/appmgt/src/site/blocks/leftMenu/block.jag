@@ -37,6 +37,7 @@ jagg.block("leftMenu", {
 
         var applicationModule = jagg.module("application");
         var application = applicationModule.getApplication(inputs.applicationKey);
+        var applicationName = applicationModule.getApplicationNameByHashId(inputs.applicationKey);
         if (!selectedRevision) {
             selectedRevision = applicationModule.getSelectedRevisionFromSession(inputs.applicationKey);
         }
@@ -53,6 +54,7 @@ jagg.block("leftMenu", {
 
         return {
             "applicationKey": applicationKey,
+            "applicationName": applicationName,
             "selectedRevision": selectedRevision,
             "versionKey": versionKey,
             "pageName": pageName,

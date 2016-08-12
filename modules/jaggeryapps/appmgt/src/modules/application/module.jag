@@ -234,25 +234,26 @@ jagg.module("application", {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getVersionsOfApplication.apply(this, arguments);
     },
 
-    waitForPodToGetDeleted: function () {
-        return jagg.require(jagg.getModulesDir() + "application/application.jag").waitForPodToGetDeleted.apply(this, arguments);
-    },
-
     getAllowedContainerSpecificationsForRuntime: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getAllowedContainerSpecificationsForRuntime.apply(this, arguments);
     },
+
     setDefaultVersion: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").setDefaultVersion.apply(this, arguments);
     },
+
     getDefaultVersion: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getDefaultVersion.apply(this, arguments);
     },
+
     setDefaultDomain: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").setDefaultDomain.apply(this, arguments);
     },
+
     changeMappedDomain: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").changeMappedDomain.apply(this, arguments);
     },
+
     constructDefaultAppLaunchURL: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").constructDefaultAppLaunchURL.apply(this, arguments);
     },
@@ -260,6 +261,7 @@ jagg.module("application", {
     getTaggedApplicationsList: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getTaggedApplicationsList.apply(this, arguments);
     },
+
     getEndpointsExtractor:function () {
         return jagg.require(jagg.getModulesDir() + "application/endpoints.jag").getEndpointsExtractor.apply(this, arguments);
     }

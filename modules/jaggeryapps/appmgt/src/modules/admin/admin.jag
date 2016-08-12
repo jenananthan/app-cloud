@@ -27,6 +27,100 @@ var ApplicationManager = Packages.org.wso2.appcloud.core.ApplicationManager;
 var Util = Packages.org.wso2.appcloud.core.Util;
 var applicationModule = jagg.module("application");
 var managerModule = jagg.module("manager");
+var databaseModule = jagg.module("databases");
+
+var deleteTenant = function (tenantDomain) {
+    deleteAllApplicationsOfTenant(tenantDomain);
+    deleteAllDatabasesOfTenant(tenantDomain);
+};
+
+var deleteAllApplicationsOfTenant = function (tenantDomain) {
+    try {
+        context.startTenantFlow();
+        context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+        var applications = applicationModule.getAllApplications();
+        for (var i = 0; i < applications.length; i++) {
+            try {
+                applicationModule.deleteApplication(applications[i].hashId);
+            } catch (e) {
+                log.error('failed to delete application with hash id:' + applications[i].hashId +
+                        ' but continuing to delete other applications of tenant:' + tenantDomain);
+                log.error(e);
+                // do not throw error here, we are ignoring because we need to clean other applications.
+            }
+        }
+        if (applications.length > 0) {
+            log.info(applications.length + ' applications were deleted successfully in tenant:' + tenantDomain);
+        } else {
+            log.info('No applications found to delete in tenant:' + tenantDomain);
+        }
+    } catch (e) {
+        log.error('error occurred when deleting applications of tenant:' + tenantDomain);
+        log.error(e);
+    } finally {
+        context.endTenantFlow();
+    }
+};
+
+var deleteAllDatabasesOfTenant = function (tenantDomain) {
+    try {
+        context.startTenantFlow();
+        context.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+
+        // delete databases
+        var databasesInfo = databaseModule.getDatabases();
+        for (var i = 0; i < databasesInfo.length; i++) {
+            try {
+                databaseModule.dropDatabase(databasesInfo[i].dbName);
+            } catch (e) {
+                log.error('failed to delete database:' + databasesInfo[i].dbName +
+                        ' but continuing to delete other databases of tenant:' + tenantDomain);
+                log.error(e);
+                // do not throw error here, we are ignoring because we need to clean other databases.
+            }
+        }
+
+        if (databasesInfo.length > 0) {
+            log.info(databasesInfo.length + ' databases were deleted successfully in tenant:' + tenantDomain);
+        } else {
+            log.info('No databases were found to delete in tenant:' + tenantDomain);
+        }
+
+        // delete database users
+        var databaseUsers = databaseModule.getDatabaseUsers();
+        for (var i = 0; i < databaseUsers.length; i++) {
+            try {
+                databaseModule.deleteUser(databaseUsers[i].name);
+            } catch (e) {
+                log.error('failed to delete database user:' + databaseUsers[i].name +
+                        ' but continuing to delete other database users of tenant:' + tenantDomain);
+                log.error(e);
+                // do not throw error here, we are ignoring because we need to clean other database users.
+            }
+
+        }
+
+        if (databaseUsers.length > 0) {
+            log.info(databaseUsers.length + ' database users were deleted successfully in tenant:' + tenantDomain);
+        } else {
+            log.info('No database users were found to delete in tenant:' + tenantDomain);
+        }
+
+        // delete default template
+        try {
+            databaseModule.dropTemplate(DEFAULT_TEMPLATE);
+        } catch (e) {
+            log.error('failed to delete default database permission template :' + DEFAULT_TEMPLATE + ' of tenant:' + tenantDomain);
+            log.error(e);
+        }
+        log.info('Databases, users and templates were deleted successfully in tenant:' + tenantDomain);
+    } catch (e) {
+        log.error('error occurred when deleting databases, database users and templates of tenant: ' + tenantDomain);
+        log.error(e);
+    } finally {
+        context.endTenantFlow();
+    }
+};
 
 var stopIdleApplicationsByRunningTimePeriod = function (numberOfHours) {
     var idleApplications = ApplicationManager.getApplicationVersionsByRunningTimePeriod(numberOfHours);

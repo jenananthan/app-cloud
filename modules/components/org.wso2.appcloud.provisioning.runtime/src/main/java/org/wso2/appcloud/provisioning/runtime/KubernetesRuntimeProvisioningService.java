@@ -895,13 +895,24 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
      * {@inheritDoc}
      */
     @Override
-    public void deleteDeployment() throws RuntimeProvisioningException {
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_REPLICATION_CONTROLLER);
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_DEPLOYMENT);
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_POD);
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_INGRESS);
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_SECRETS);
-        deleteK8sKind(KubernetesPovisioningConstants.KIND_SERVICE);
+    public boolean deleteDeployment() throws RuntimeProvisioningException {
+        try {
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_DEPLOYMENT);
+            KubernetesProvisioningUtils.waitForDeploymentToGetDeleted(applicationContext);
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_REPLICATION_CONTROLLER);
+            KubernetesProvisioningUtils.waitForRCToGetDeleted(applicationContext);
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_POD);
+            KubernetesProvisioningUtils.waitForPodToGetDeleted(applicationContext);
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_INGRESS);
+            KubernetesProvisioningUtils.waitForIngressesToGetDeleted(applicationContext);
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_SECRETS);
+            KubernetesProvisioningUtils.waitForSecretToGetDeleted(applicationContext);
+            deleteK8sKind(KubernetesPovisioningConstants.KIND_SERVICE);
+            KubernetesProvisioningUtils.waitForServiceToGetDeleted(applicationContext);
+            return true;
+        } catch (RuntimeProvisioningException e){
+            return false;
+        }
     }
 
     /**

@@ -55,7 +55,7 @@ include("/jagg/jagg.jag");
                                 "name":"leftMenu",
                                 "inputs":{
                                     "applicationKey":applicationKey,
-                                    "pageName":"overview"
+                                    "pageName":"Overview"
                                 }
                             }
                         ]

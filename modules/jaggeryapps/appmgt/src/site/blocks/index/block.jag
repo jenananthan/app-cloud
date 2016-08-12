@@ -38,13 +38,16 @@ jagg.block("index", {
         }
 
         var cloudTitle = jagg.module("manager").getCloudTypeProperties().cloudTitle;
+        var cloudSpecificApplicationRepresentation = jagg.module("manager").getCloudTypeProperties().cloudSpecificApplicationRepresentation;
+
 
         return {
             "applications" : applications,
             "applicationName" :applicationName,
             "appTypeCount" : appTypeCount,
             "appType" : appType,
-            "cloudTitle" : cloudTitle
+            "cloudTitle" : cloudTitle,
+            "cloudSpecificApplicationRepresentation" : cloudSpecificApplicationRepresentation
         };
     }
 

@@ -32,6 +32,7 @@ jagg.block("home", {
     getOutputs:function (inputs) {
         var log = new Log();
         var applicationModule = jagg.module("application");
+        var managerModule = jagg.module("manager");
         var appTypePropertyConfPath = jagg.getAppTypePropertyConfFilePath();
         var parsedObject = parse(appTypePropertyConfPath);
         var appTypesProperties = require(parsedObject);
@@ -46,15 +47,17 @@ jagg.block("home", {
         var selectedVersion = application.versions[selectedRevision];
         var conSpecCpu = selectedVersion.conSpecCpu;
         var conSpecMemory = selectedVersion.conSpecMemory;
+        var dashboardUrl = managerModule.getPropertyValue(DASHBOARD_BASE_URL);
 
-        var pageTitle = jagg.module("manager").getCloudTypeProperties().pageTitle;
+        var pageTitle = managerModule.getCloudTypeProperties().pageTitle;
         return {
             "application" : application,
             "selectedRevision" : selectedRevision,
             "conSpecCpu" : conSpecCpu,
             "conSpecMemory" : conSpecMemory,
             "restartCounts" : restartCounts,
-            "pageTitle" : pageTitle
+            "pageTitle" : pageTitle,
+            "dashboardUrl" : dashboardUrl
         };
     }
 

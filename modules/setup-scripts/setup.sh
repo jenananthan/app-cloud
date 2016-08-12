@@ -137,10 +137,10 @@ function as_setup(){
     cp $APP_CLOUD_SRC_HOME/modules/components/org.wso2.appcloud.provisioning.runtime/target/org.wso2.appcloud.provisioning.runtime-3.0.0-SNAPSHOT.jar $1/repository/components/dropins/
     cp $APP_CLOUD_SRC_HOME/modules/components/org.wso2.appcloud.common/target/org.wso2.appcloud.common-3.0.0-SNAPSHOT.jar $1/repository/components/dropins/
     mkdir -p $1/repository/conf/appcloud
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/appcloud/appcloud.properties $1/repository/conf/appcloud/
+    cp $CONF_LOCATION/wso2as-5.2.1/repository/conf/appcloud/appcloud.properties $1/repository/conf/appcloud/
+    cp $CONF_LOCATION/wso2as-5.2.1/repository/conf/security/authenticators.xml $1/repository/conf/security/
+    cp -r $PATCH_LOCATION/wso2as-5.2.1/* $1/repository/components/patches/
     cp $CONF_LOCATION/$AS_VERSION/repository/conf/carbon.xml $1/repository/conf/
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $1/repository/conf/security/
-    cp -r $PATCH_LOCATION/$AS_VERSION/* $1/repository/components/patches/
     cp $CONF_LOCATION/$AS_VERSION/bin/wso2server.sh $1/bin/
     cp -r $APP_CLOUD_SRC_HOME/modules/webapps/appCloudTierapi/target/tierapi.war $1/repository/deployment/server/webapps/
 
@@ -173,12 +173,10 @@ function as_cluster_setup(){
 
     sed -i -e "s/https:\/\/localhost:9443\/appmgt\/jagg\/jaggery_acs.jag/http:\/\/$IP\/appmgt\/jagg\/jaggery_acs.jag/g" $IS_HOME/repository/conf/security/sso-idp-config.xml
 
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/axis2/axis2.xml $AS_HOME1/repository/conf/axis2/
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/axis2/axis2.xml $AS_HOME2/repository/conf/axis2/
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $AS_HOME1/repository/conf/security/
-    cp $CONF_LOCATION/$AS_VERSION/repository/conf/security/authenticators.xml $AS_HOME2/repository/conf/security/
-    cp -r $PATCH_LOCATION/$AS_VERSION/* $AS_HOME1/repository/components/patches/
-    cp -r $PATCH_LOCATION/$AS_VERSION/* $AS_HOME2/repository/components/patches/
+    cp $CONF_LOCATION/wso2as-5.2.1/repository/conf/security/authenticators.xml $AS_HOME1/repository/conf/security/
+    cp $CONF_LOCATION/wso2as-5.2.1/repository/conf/security/authenticators.xml $AS_HOME2/repository/conf/security/
+    cp -r $PATCH_LOCATION/wso2as-5.2.1/* $AS_HOME1/repository/components/patches/
+    cp -r $PATCH_LOCATION/wso2as-5.2.1/* $AS_HOME2/repository/components/patches/
 
     echo "AS cluster setup successfully done!"
 

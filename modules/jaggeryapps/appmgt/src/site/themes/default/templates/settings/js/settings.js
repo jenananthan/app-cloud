@@ -29,14 +29,18 @@ $("#update-default-version").click(function () {
         action: "updateDefaultVersion",
         applicationName: applicationName,
         defaultVersion: versionName
-    }, defaultVersionUpdatedSuccess, function (jqXHR, textStatus, errorThrown) {
+    },function defaultVersionUpdatedSuccess(result) {
+        //alert(result);
+        var defaultVersion = "Default version is set to " + $("#default-version option:selected").val();
+        $("#lbl-default-version").text(defaultVersion);
+        jagg.message({content: "Default version is successfully updated.", type: 'success', id: 'view_log'});
+        setTimeout(redirectAppHome, 3000);
+        function redirectAppHome(){
+            window.location.replace("home.jag?applicationKey=" + result);
+        }
+    },function (jqXHR, textStatus, errorThrown) {
         jagg.message({content: jqXHR.responseText, type: 'error', id: 'view_log'});
+
     });
 });
 
-function defaultVersionUpdatedSuccess() {
-    var defaultVersion = "Default version is set to " + $("#default-version option:selected").val();
-    $("#lbl-default-version").text(defaultVersion);
-    jagg.message({content: "Default version successfully updated", type: 'success', id: 'view_log'});
-
-}

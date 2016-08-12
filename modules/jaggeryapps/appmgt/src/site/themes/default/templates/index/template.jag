@@ -18,18 +18,21 @@
  */
 
 include("/jagg/jagg.jag");
+include('/jagg/constants.jag');
 
 jagg.template("index", function(inputs, outputs, jagg) {
     var applications = outputs.applications;
     var appTypeCount = outputs.appTypeCount;
     var appType = outputs.appType;
     var cloudTitle = outputs.cloudTitle;
+    var cloudSpecificApplicationRepresentation = outputs.cloudSpecificApplicationRepresentation;
     var log = new Log("index");
-
+    
     %>
 
     <script type="text/javascript" xmlns="http://www.w3.org/1999/html" charset="utf-8">
         var applicationList = <%=applications%>;
+        var cloudSpecificApplicationRepresentation = "<%=cloudSpecificApplicationRepresentation%>";
         var taggedApplicationsList;
         var searchbox;
 
@@ -82,7 +85,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
 
                     if ($("#item_list").children().length <= 1) {
                         $("#item_list").append($('<div class="col-centered col-md-4 "><div class="cloud-new-content"> ' +
-                         '<h3>Your search "'+finder+'" did not match any applications.</h3></div></div>'));
+                         '<h3>Your search "'+finder+'" did not match any' + cloudSpecificApplicationRepresentation + '.</h3></div></div>'));
                     }
                 }
             });
@@ -127,7 +130,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
 
                             '<div class="cloud-app-listing app-color-one">'+
                                     '<a href="/appmgt/site/pages/home.jag?applicationKey=' + application.hashId + '">'+
-                                    '<i class="fw '+application.appTypeIcon+' fw-2x app-type-icon" data-toggle="tooltip" data-placement="right" title=application.appTypeTitle></i>' +
+                                    '<i class="fw '+application.appTypeIcon+' fw-2x app-type-icon" data-toggle="tooltip" data-placement="right" title=' + application.appTypeTitle + '></i>' +
                                      appIcon +
                                     '<div class="app-name">' + displayName + '</div>' +
                                     '</a>' +
@@ -180,15 +183,15 @@ jagg.template("index", function(inputs, outputs, jagg) {
             action:"deleteApplication",
             applicationKey:applicationHashId
         },function (result) {
-            jagg.message({content: 'Application: ' + appName + ' deleted successfully.', type: 'success', id:'view_log'});
+            jagg.message({content: 'Application: ' + appName + ' was deleted successfully.', type: 'success', id:'view_log'});
             setTimeout(redirectAppListing, 2000);
         },function (jqXHR, textStatus, errorThrown) {
-            jagg.message({content: "Error occurred while deleting application : " + appName, type: 'error', id:'view_log'});
+            jagg.message({content: "An error occurred while deleting the application : " + appName, type: 'error', id:'view_log'});
         });
     }
 
     function deleteApplicationPopUp(appName, applicationHashId){
-        jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Application',content:'Are you sure you want to delete : ' + appName + ' ?',
+        jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Application',content:'Are you sure you want to delete ' + appName + ' ?',
             okCallback:function(){
                deleteApplicationAllVersions(appName, applicationHashId);
             }, cancelCallback:function(){}
@@ -240,7 +243,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
             if(finderKey != null){
                 $("#item_list").append($('<div class="col-centered col-md-4 ">' +
                                             '<div class="cloud-new-content">' +
-                                                '<h3>No applications found with tag' +
+                                                '<h3>No ' + cloudSpecificApplicationRepresentation + ' found with tag' +
                                                         ' key : ' + finderKey +
                                                         ', and value : '  + finderVal +
                                                 '.</h3>' +
@@ -249,7 +252,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
             } else {
                 $("#item_list").append($('<div class="col-centered col-md-4 ">' +
                                             '<div class="cloud-new-content">' +
-                                                '<h3>No applications found with tag' +
+                                                '<h3>No ' + cloudSpecificApplicationRepresentation + ' found with tag' +
                                                         ' key : ' + finder +
                                                 '.</h3>' +
                                             '</div>' +
@@ -269,7 +272,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
             <span class="fw-stack fw-lg btn-action-ico">
                 <i class="fw fw-circle-outline fw-stack-2x"></i>
                 <i class="fw fw-add fw-stack-1x"></i>
-            </span> <span class="hidden-xs">Create Application</span>
+            </span> <span class="hidden-xs">Create <%=cloudSpecificApplicationRepresentation%></span>
         </a>
         <a href="<%=jagg.getAbsoluteUrl("/site/pages/newdatabase.jag")%>?isEdit=false" class="btn-action" data-toggle="tooltip" data-placement="top" title="Add New Database">
             <span class="fw-stack fw-lg btn-action-ico">
@@ -285,7 +288,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
     <% if (applications.length > 0 ) { %>
         <div class="row row-centered app-sort-bar">
             <div class="col-centered col-md-5 search">
-                <input type="text" class="form-control" id="search-apps" placeholder="Search applications">
+                <input type="text" class="form-control" id="search-apps" placeholder="Search <%=cloudSpecificApplicationRepresentation%>">
                 <i class="fa fa-2x fa-search" ></i>
             </div>
         </div>
@@ -299,7 +302,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
                     <% } else { %>
                     <a id="app-create-button" class="cu-btn cu-btn-md cu-btn-blue" href="/appmgt/site/pages/select-apptype.jag">
                     <% } %>
-                      Create your first application</a>
+                      Create your first <%=cloudSpecificApplicationRepresentation%></a>
                     <!--div class="help">
                         <i class="fa fa-2x fa-book"></i> Need help ? Read App creation guide first..
                     </div-->
@@ -324,7 +327,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
                     <div class="container-fluid">
                         <div class="row">
                             <div id="progress_table" class="col-xs-12 col-md-12 section-title">
-                            <i class="fa fa-2x fa-circle-o-notch fa-spin"></i>
+                            <i class="fw fw-2x fw-loader2 fw-spin"></i>
                         </div>
                     </div>
                 </div>

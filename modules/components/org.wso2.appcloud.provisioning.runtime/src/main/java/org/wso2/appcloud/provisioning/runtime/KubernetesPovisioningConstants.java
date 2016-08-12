@@ -57,5 +57,22 @@ public class KubernetesPovisioningConstants {
 
     public static final String IMAGE_PULL_POLICY_ALWAYS = "Always";
 
+    public static final String POD_DELETE_TIMEOUT = "Pod.Delete.Timeout";
+    public static final String POD_DELETE_WAIT = "Pod.Delete.Wait";
+
+    public static final String DEPLOYMENT_DELETE_TIMEOUT = "Deployment.Delete.Timeout";
+    public static final String DEPLOYMENT_DELETE_WAIT = "Deployment.Delete.Wait";
+
+    public static final String RC_DELETE_TIMEOUT = "RC.Delete.Timeout";
+    public static final String RC_DELETE_WAIT = "RC.Delete.Wait";
+
+    public static final String INGRESS_DELETE_TIMEOUT = "Ingress.Delete.Timeout";
+    public static final String INGRESS_DELETE_WAIT = "Ingress.Delete.Wait";
+
+    public static final String SERVICE_DELETE_TIMEOUT = "Service.Delete.Timeout";
+    public static final String SERVICE_DELETE_WAIT = "Service.Delete.Wait";
+
+    public static final String SECRET_DELETE_TIMEOUT = "Secret.Delete.Timeout";
+    public static final String SECRET_DELETE_WAIT = "Secret.Delete.Wait";
 
 }

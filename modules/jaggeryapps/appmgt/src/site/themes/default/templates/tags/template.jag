@@ -32,13 +32,6 @@ jagg.template("tags", function(inputs, outputs, jagg) {
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/font-awesome-4.2.0/font-awesome.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/web-fonts/Roboto.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
-    <%
-        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
-    %>
-            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
-    <%
-        }
-    %>
 
  <!-- right pane wrapper -->
  <div class="right-pane">
@@ -151,7 +144,7 @@ $(document).ready(function () {
             var key = $(this).parent().parent().parent().find('#key')[0].value;
             var value = $(this).parent().parent().parent().find('#value')[0].value;
             var tr = $(this).parent().parent().parent();
-            jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Tag',content:'Are you sure you want to delete this Tag ' + key + ' ?',
+            jagg.popMessage({type:'confirm', modalStatus: true, title:'Delete Tag',content:'Are you sure you want to delete tag ' + key + ' ?',
                 okCallback:function(){
                    deleteTag(key, value, tr);
                 }, cancelCallback:function(){}

@@ -62,7 +62,7 @@
                                      "applicationKey": applicationKey,
                                      "versionKey": versionKey,
                                      selectedRevision: selectedRevision,
-                                     "pageName": "runtimeLogs"
+                                     "pageName": "Runtime Logs"
                                  }
                              }
                          ]

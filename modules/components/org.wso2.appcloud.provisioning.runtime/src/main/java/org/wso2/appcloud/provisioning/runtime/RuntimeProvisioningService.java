@@ -175,7 +175,7 @@ public interface RuntimeProvisioningService {
      *
      * @throws RuntimeProvisioningException
      */
-    void deleteDeployment() throws RuntimeProvisioningException;
+    boolean deleteDeployment() throws RuntimeProvisioningException;
 
     /**
      * Create a service in K8s.

@@ -17,49 +17,29 @@
  *   under the License.
  */
 
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
 var log = new Log();
+var ApplicationManager = Packages.org.wso2.appcloud.core.ApplicationManager;
 /*
 -----------------------------------------------------------------
     Sample JSON message we need to return
 
-{
-    "endpoints":{
-        "rest":[
-            {
-                "name":"api1",
-                "endpoints":[
-                    {"methods":"GET, POST","url":"https://apps.wso2.com/api1/{id}"},
-                    {"methods":"GET, POST","url":"https://apps.wso2.com/api1/{name}"}
-                ]
-            },
-            {
-                "name":"api2",
-                "endpoints":[
-                    {"methods":"GET, POST", "url":"https://apps.wso2.com/api2/{id}"}
-                ]
-            }
-        ],
-        "soap":[
-            {
-                "name":"service1",
-                "endpoints":[
-                    {"version":"1.1", "url":"https://apps.wso2.com/services/service1.1?wsdl"},
-                    {"version":"1.2", "url":"https://apps.wso2.com/services/service1.2?wsdl"}
-                ]
-            }
-        ],
-        "web":[
-            {"url":"https://apps.wso2.com/test/plan"}
-        ]
-    }
-}
+ {
+     "data": {
+         "restEndpoints" : [{"name" : apiName, "url" : apiUrl}],
+         "soapEndpoints": [{"name" : proxyName, "wsdl" : wsdlUrl}],
+         "webEndpoints" : [{"context" : context, "url" : webUrl}],
+         "swaggerEndpoints" : [{"context" : context, "url" : swaggerUrl}]
+     }
+ }
 -----------------------------------------------------------------
 */
 
 
 // endpointExtractor interface
 var EndpointsExtractor = {
-    getEndpoints: function (deploymentUrl) {}
+    getEndpoints: function (deploymentUrl, versionId) {}
 };
 
 // define classes
@@ -79,34 +59,89 @@ JaggeryEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
 DSSEndpointsExtractor.prototype = Object.create(EndpointsExtractor);
 
 // actual implementation goes here
-WarEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
-    return ;
+WarEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
+    return getEndpointsWithApplicationContext(deploymentUrl, versionId);
 };
 
-PHPEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
-    return ;
+PHPEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
+    return getEndpointsWithApplicationContext(deploymentUrl, versionId);
 };
 
-MSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
-    return ;
-};
+MSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
 
-ESBEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
-    var containerApiUrl = deploymentUrl + "/container/endpoints";
+    var swaggerUrl = deploymentUrl + "/swagger";
     var endpoints = undefined;
     try {
-        endpoints = get(containerApiUrl, {}, "json");
+        // check whether accessible
+        get(swaggerUrl, {}, "json");
+
+        var swaggerEndpoints = [];
+        swaggerEndpoints.push({context : "/swagger", url: swaggerUrl});
+        endpoints = createJsonResponse(null, null, null, swaggerEndpoints);
     } catch(e) {
-        return endpoints;
+        return undefined;
     }
     return endpoints;
 };
 
-JaggeryEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
-    return ;
+ESBEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
+    var containerApiUrl = deploymentUrl + "/container/endpoints";
+    var endpoints = undefined;
+
+    try {
+        endpoints = get(containerApiUrl, {}, "json");
+
+        var restEndpoints = [];
+        var soapEndpoints = [];
+
+        var data = endpoints.data;
+        var proxies = data.urls.proxies;
+        if (proxies != null) {
+            if (Array.isArray(proxies)) {
+                for (var i = 0; i < proxies.length; i++) {
+                    var proxy = proxies[i];
+                    var wsdl1 = deploymentUrl + "/" + (proxy.wsdl[0]).substring((proxy.wsdl[0]).indexOf('services'));
+                    soapEndpoints.push({name : proxy.name, wsdl :wsdl1});
+                }
+            } else {
+                var proxy = proxies;
+                var wsdl1 = deploymentUrl + "/" + (proxy.wsdl[0]).substring((proxy.wsdl[0]).indexOf('services'));
+                soapEndpoints.push({name : proxy.name, wsdl :wsdl1});
+            }
+        }
+
+        var apis = data.urls.apis;
+        if (apis != null) {
+            if (Array.isArray(apis)) {
+                for (var j = 0; j < apis.length; j++) {
+                    var api = apis[j];
+                    var url = deploymentUrl + api.context;
+                    if (api.name != "ContainerAPI") {
+                        restEndpoints.push({"name" : api.name, "url" : url});
+                    }
+                }
+            } else {
+                var api = apis;
+                var url = deploymentUrl + api.context;
+                if (api.name != "ContainerAPI") {
+                    restEndpoints.push({"name" : api.name, "url" : url});
+                }
+            }
+        }
+
+        endpoints = createJsonResponse(restEndpoints, soapEndpoints, null);
+    } catch(e) {
+        return undefined;
+    }
+
+    return endpoints;
 };
 
-DSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl) {
+JaggeryEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
+    return getEndpointsWithApplicationContext(deploymentUrl, versionId);
+};
+
+DSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
     return ;
 };
 
@@ -135,5 +170,70 @@ var getEndpointsExtractor = function(appType) {
     if (appType == "wso2dataservice") {
         return new DSSEndpointsExtractor();
     }
+};
+
+var createJsonResponse = function (restEndpoints, soapEndpoints, webEndpoints, swaggerEndpoints) {
+
+    if (restEndpoints != null && restEndpoints.length < 1) {
+        restEndpoints = null;
+    }
+
+    if (soapEndpoints != null && soapEndpoints.length < 1) {
+        soapEndpoints = null;
+    }
+
+    if (webEndpoints != null && webEndpoints.length < 1) {
+        webEndpoints = null;
+    }
+
+    if (swaggerEndpoints != null && swaggerEndpoints.length < 1) {
+        swaggerEndpoints = null;
+    }
+
+    // If all three arrays does not contain any data, return undefined.
+    if (restEndpoints == null && soapEndpoints == null && webEndpoints == null && swaggerEndpoints == null) {
+        return undefined;
+    }
+
+    var endpoints =  {
+        "data": {
+            "restEndpoints" : restEndpoints,
+            "soapEndpoints": soapEndpoints,
+            "webEndpoints" : webEndpoints,
+            "swaggerEndpoints" : swaggerEndpoints
+        }
+    };
+
+    return endpoints;
+};
+
+var getEndpointsWithApplicationContext = function (deploymentUrl, versionId) {
+    var applicationContextList = ApplicationManager.getApplicationContexts(versionId);
+
+    var context = "";
+    if (applicationContextList != null && applicationContextList.size() > 0 && applicationContextList.get(0) != null){
+        if(!applicationContextList.get(0).startsWith("/")){
+            context = "/";
+        }
+        context += applicationContextList.get(0);
+    } else {
+        context = "/";
+    }
+    var webUrl = deploymentUrl + context;
+
+    var webEndpoints = [];
+    webEndpoints.push({context : context, url: webUrl});
+
+    var endpoints = undefined;
+    try {
+        // check whether accessible
+        get(webUrl, {}, "text");
+
+        endpoints = createJsonResponse(null, null, webEndpoints, null);
+    } catch (e) {
+        log.info(e);
+        return undefined;
+    }
+    return endpoints;
 };
 %>

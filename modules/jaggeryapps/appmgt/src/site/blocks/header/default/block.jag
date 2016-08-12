@@ -45,6 +45,10 @@ jagg.block("header/default", {
 
         var isGoogleAnalyticsEnabled = manager.getPropertyValue(GOOGLE_ANALYTICS_ENABLED);
         var googleTrackingId = manager.getPropertyValue(GOOGLE_TRACKING_ID);
+        var appCloudURL = manager.getPropertyValue(APP_CLOUD_URL);
+        var integrationCloudURL = manager.getPropertyValue(INTEGRATION_CLOUD_URL);
+        var apiCloudPublisherURL = manager.getPropertyValue(API_CLOUD_PUBLISHER__URL);
+        var cloudMgtURL = manager.getPropertyValue(CLOUD_MGT_URL);
 
         return {
             "user": user,
@@ -54,7 +58,11 @@ jagg.block("header/default", {
             "supportUrl": supportUrl,
             "cloudTitle" : cloudTitle,
             "isGoogleAnalyticsEnabled" : isGoogleAnalyticsEnabled,
-            "googleTrackingId" : googleTrackingId
+            "googleTrackingId" : googleTrackingId,
+            "appCloudURL" : appCloudURL,
+            "integrationCloudURL" : integrationCloudURL,
+            "apiCloudPublisherURL" : apiCloudPublisherURL,
+            "cloudMgtURL" : cloudMgtURL
         };
     }
 });

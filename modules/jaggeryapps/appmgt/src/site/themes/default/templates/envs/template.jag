@@ -33,13 +33,6 @@ jagg.template("envs", function(inputs, outputs, jagg) {
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/web-fonts/Roboto.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/select2-4.0.0/select2.min.css'))%>">
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/styles.css'))%>">
-    <%
-        if(jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
-    %>
-            <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/integration-styles.css'))%>">
-    <%
-        }
-    %>
 
 
  <!-- right pane wrapper -->
@@ -65,11 +58,7 @@ jagg.template("envs", function(inputs, outputs, jagg) {
 
         <div class="row">
             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 msg-issues">
-                This allows you to set environment variables that are used in your application. Type in the <b>value</b> or <b>database:</b> tag in the Value text-box.
-                <br>
-                By using <b>database:</b> you can add database related environment variables. The list of available databases will appear. Select a database of your choice. Thereafter,
-                select the type of environment variable (i.e., <b>Database Name</b>, <b>URL</b>, <b>Attached Users</b>) that you wish to add to get
-                specific details of the environment variable, which corresponds to the database that you selected (e.g., the exact URL of the database).
+                This allows you to set environment variables that are used in your application. To add database-specific environment variables, type <b>database:</b> in the Value textbox.
             </div>
         </div>
         <div class="env-list">
@@ -241,7 +230,7 @@ $(document).ready(function() {
             var keyValidation = validateEnvKey(updatedKey);
             if (!updatedKey || !updatedValue) { //Validation when user submits empty keys and values
                 jagg.message({
-                    content: "Please fill necessary details before saving.",
+                    content: "Please fill the necessary details before saving.",
                     type: 'info'
                 });
                 return;

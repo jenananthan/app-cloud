@@ -28,6 +28,10 @@ jagg.template("header/default", function(inputs, outputs, jagg) {
     var cloudTitle = outputs.cloudTitle;
     var isGoogleAnalyticsEnabled = outputs.isGoogleAnalyticsEnabled;
     var googleTrackingId = outputs.googleTrackingId;
+    var appCloudURL = outputs.appCloudURL;
+    var integrationCloudURL = outputs.integrationCloudURL;
+    var apiCloudPublisherURL = outputs.apiCloudPublisherURL;
+    var cloudMgtURL = outputs.cloudMgtURL;
 
     if(isGoogleAnalyticsEnabled) {
 %>
@@ -110,19 +114,37 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 </div>
                 <div id="popover-content" class="hide">
                    <div class="cloud-apps">
-                       <a class="cloud-block" href="https://api.cloud.wso2.com/publisher" target=_blank>
+                       <a class="cloud-block" href="<%=apiCloudPublisherURL%>" target=_blank>
                            <i class="fw fw-api fa-3x"></i>
                            <div class="cloud-name">API Cloud</div>
                        </a>
+                        <%
+                            if (jagg.getSelectedCloud() == INTEGRATION_CLOUD) {
+                        %>
+                        <a class="cloud-block" href="<%=appCloudURL%>" target="_blank">
+                            <i class="fa fa-3x fa-cubes"></i>
+                            <div class="cloud-name"> App Cloud</div>
+                        </a>
+                        <%
+                            } else {
+                        %>
+                        <a class="cloud-block" href="<%=integrationCloudURL%>" target="_blank">
+                            <i class="fw fw-3x fw-service"></i>
+                            <div class="cloud-name"> Integration Cloud</div>
+                        </a>
+                        <%
+                            }
+                        %>
+
                        <div class="clearfix"></div> <!-- to make seperate -->
                    </div>
                    <div class="cloud-actions">
                        <h3>Manage your Cloud</h3>
-                        <a class="cloud-block-invert" href="http://cloudmgt.cloud.wso2.com/cloudmgt/site/pages/organization.jag" target=_blank>
+                        <a class="cloud-block-invert" href="<%=cloudMgtURL%>/site/pages/organization.jag" target=_blank>
                             <i class="fa fa-3x  fa-institution"></i>
                             <div class="cloud-name">Organizations</div>
                         </a>
-                       <a class="cloud-block-invert" href="http://cloudmgt.cloud.wso2.com/cloudmgt/site/pages/user.jag" target=_blank>
+                       <a class="cloud-block-invert" href="<%=cloudMgtURL%>/site/pages/user.jag" target=_blank>
                            <i class="fa fa-3x  fa-users"></i>
                            <div class="cloud-name">Members</div>
                        </a>
@@ -143,8 +165,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="container-fliud">
         <div class="row">
             <div class="col-md-3 breadcrumb-secondary">
-                <a href="/appmgt/site/pages/index.jag"><i class="fa fa-cubes visible-xs visible-lg"></i></a>
-                <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a></span>
+                <a href="/appmgt/site/pages/index.jag">
+                    <%if (jagg.getSelectedCloud() == INTEGRATION_CLOUD) {%>
+                        <i class="fw fw-service visible-xs visible-lg"></i> <!-- Change this once UX team provided a proper icon-->
+                    <%} else {%>
+                        <i class="fa fa-cubes visible-xs visible-lg"></i>
+                    <%}%>
+                </a>
+    <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a></span>
             </div>
         </div>
     </div>

@@ -149,7 +149,17 @@ var log = new Log('site/blocks/admin/admin.jag');
             response.status = 400;
             response.content = "Getting maximum database count failed.";
         }
-    } else  {
+    } else if (action == "deleteTenant") {
+        var tenantDomain = request.getParameter("tenantDomain");
+        try {
+            adminModule.deleteTenant(tenantDomain);
+            response.status = 200;
+            response.content = "Tenant :" + tenantDomain + " successfully deleted.";
+        } catch (e) {
+            response.status = 400;
+            response.content = "Failed to delete tenant:" + tenantDomain;
+        }
+    } else {
         throw new Error("No action specified for: " + action);
     }
 }());

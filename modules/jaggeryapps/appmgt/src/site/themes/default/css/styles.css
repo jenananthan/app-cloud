@@ -1108,7 +1108,6 @@ a.btn-action {
 .block-runtime,
 .block-monitoring,
 .block-team,
-.block-endpoints-init,
 .block-endpoints,
 .block-replica,
 .block-database {
@@ -1138,13 +1137,8 @@ a.btn-action {
     background-color: #464646;
     min-height: 24em;
 }
-.block-endpoints-init {
-    background-color: #464646;
-    min-height: 2em;
-}
 .block-endpoints {
     background-color: #464646;
-    min-height: 24em;
 }
 .block-runtime{
     background-color: #e67e22;
@@ -1949,7 +1943,7 @@ a.btn-action {
 .btn-edit-code > a{
     border:none;
     line-height:20px;
-    margin-top:-3px;
+    margin-top:0px;
 }
 .invitaiton_list{
     list-style:none;
@@ -2641,7 +2635,7 @@ th.hide-column-data, td.hide-column-data {
 }
 
 .demo-dashboard-block{
-    font-size: 13em;
+    font-size: 900%;
 }
 .block-replicas{
     min-height: 16em;
@@ -2828,8 +2822,8 @@ ul#appVersionList {
 
 .info-block {
     color: #10171d;
-    font-size: 12px;
-    padding: 5px;
+    font-size: 14px;
+    padding: 15px;
     text-align: justify;
     background: rgb(246,248,249); /* Old browsers */
     background: -moz-linear-gradient(top, rgba(246,248,249,1) 0%, rgba(229,235,238,1) 15%, rgba(215,222,227,1) 78%, rgba(245,247,249,1) 100%); /* FF3.6-15 */
@@ -2849,3 +2843,54 @@ ul#appVersionList {
 .from-group-margin {
     margin-bottom: 1.0em;
 }
+
+.wrapper {
+    position: relative;
+    z-index: 90;
+}
+
+.ribbon-wrapper {
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+}
+
+.ribbon {
+    font: bold 15px Sans-Serif;
+    color: #333;
+    text-align: center;
+    -webkit-transform: rotate(45deg);
+    -moz-transform:    rotate(45deg);
+    -ms-transform:     rotate(45deg);
+    -o-transform:      rotate(45deg);
+    position: relative;
+    padding: 7px 0;
+    left: -10px;
+    top: 31px;
+    width: 165px;
+    background-color: #fff;
+    color: #6a6340;
+    -webkit-box-shadow: 0px 0px 3px rgba(0,0,0,0.3);
+    -moz-box-shadow:    0px 0px 3px rgba(0,0,0,0.3);
+    box-shadow:         0px 0px 3px rgba(0,0,0,0.3);
+}
+
+.ribbon:before, .ribbon:after {
+    content: "";
+    border-top:   3px solid #95a5a6;
+    border-left:  3px solid transparent;
+    border-right: 3px solid transparent;
+    position:absolute;
+    bottom: -3px;
+}
+
+.ribbon:before {
+    left: 0;
+}
+.ribbon:after {
+    right: 0;
+}​
+

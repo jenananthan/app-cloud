@@ -114,10 +114,10 @@ function detachUserAndDropTemplate(userName){
     }, function (result) {
         if(result) {
             usersDatatable.api().ajax.reload();
-            jagg.message({content:'Successfully detached user: ' + userName + ' from database: ' + dbName + '.' , type:'success', id:'userdetach'});
+            jagg.message({content:'Successfully removed user: ' + userName + ' from database: ' + dbName + '.' , type:'success', id:'userdetach'});
         }
     },function (jqXHR, textStatus, errorThrown) {
-            jagg.message({content:'Failed to attach user: ' + userName + ' to database: ' + dbName + '.', type:'error', id:'userdetach'});
+            jagg.message({content:'An error occurred while removing user: ' + userName + ' from the database: ' + dbName + '.', type:'error', id:'userdetach'});
     });
 }
 
@@ -211,7 +211,7 @@ function deleteUser(userName) {
             usersDatatable.api().ajax.reload();
         },function (jqXHR, textStatus, errorThrown) {
             if (jqXHR.status != 0) {
-                jagg.message({content:'Cannot delete user: ' + userName + '. User already attached to a database.',type:'error', id:'dbusercreation' });
+                jagg.message({content:'Cannot delete user: ' + userName + ' as the user is already attached to a database.',type:'error', id:'dbusercreation' });
             }
         });
 }

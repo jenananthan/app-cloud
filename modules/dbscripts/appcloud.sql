@@ -192,8 +192,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `AppCloudDB`.`AC_RUNTIME_PROPERTY` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `value` VARCHAR(100) NULL,
+  `name` VARCHAR(200) NOT NULL,
+  `value` VARCHAR(2000) NULL,
   `version_id` INT NOT NULL,
   `description` VARCHAR(1000) NULL,
   `tenant_id` INT NOT NULL,

@@ -21,6 +21,7 @@ include("/jagg/jagg.jag");
 
 jagg.template("leftMenu", function (inputs, outputs, jagg) {
     var applicationKey = outputs.applicationKey;
+    var applicationName = outputs.applicationName;
     var versionKey = outputs.versionKey;
     var selectedRevision = outputs.selectedRevision;
     var pageName = outputs.pageName;
@@ -34,9 +35,9 @@ jagg.template("leftMenu", function (inputs, outputs, jagg) {
              <div class="side-pane-trigger">
                 <i class="fa fa-reorder"></i>
             </div>
-            <div class="col-md-3 breadcrumb-secondary">
+            <div class="col-md-8 breadcrumb-secondary">
                 <a href="/appmgt/site/pages/index.jag"><i class="fa fa-cubes visible-xs visible-lg"></i></a>
-                <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a></span>
+                <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a> / <a href="/appmgt/site/pages/home.jag?applicationKey=<%=applicationKey%>"> <%=applicationName%></a> / <%=pageName%></span>
             </div>
         </div>
     </div>
@@ -47,22 +48,22 @@ jagg.template("leftMenu", function (inputs, outputs, jagg) {
 <!-- left pane wrapper -->
 <div class="left-pane ">
     <ul>
-        <li class="<% if (pageName == "overview") { %>selected<%}%>">
+        <li class="<% if (pageName == "Overview") { %>selected<%}%>">
                 <a id="leftMenuOverview" href="/appmgt/site/pages/home.jag?applicationKey=<%=applicationKey%>"><i class="fa fa-laptop"></i> Overview</a>
         </li>
-        <li class="<% if (pageName == "envs") { %>selected<%}%>">
-                <a id="leftMenuEnvVars" href="/appmgt/site/pages/envs.jag?versionKey=<%=versionKey%>&applicationKey=<%=applicationKey%>"><i class="fa fa-wrench"></i> Env Variables</a>
+        <li class="<% if (pageName == "Environment Variables") { %>selected<%}%>">
+                <a id="leftMenuEnvVars" href="/appmgt/site/pages/envs.jag?versionKey=<%=versionKey%>&applicationKey=<%=applicationKey%>"><i class="fa fa-wrench"></i> Environment Variables</a>
         </li>
-        <li class="<% if (pageName == "tags") { %>selected<%}%>">
+        <li class="<% if (pageName == "Tags") { %>selected<%}%>">
                 <a id="leftMenuTagSet" href="/appmgt/site/pages/tags.jag?applicationKey=<%=applicationKey%>&versionKey=<%=versionKey%>"><i class="fa fa-tag"></i> Tags</a>
         </li>
-        <li class="<% if (pageName == "runtimeLogs") { %>selected<%}%>">
+        <li class="<% if (pageName == "Runtime Logs") { %>selected<%}%>">
                 <a href="/appmgt/site/pages/runtimeLogs.jag?applicationKey=<%=applicationKey%>&selectedRevision=<%=selectedRevision%>&versionKey=<%=versionKey%>"><i class="fa fa-hdd-o"></i>Runtime Logs</a>
         </li>
-        <li class="<% if (pageName == "customUrl") { %>selected<%}%>">
+        <li class="<% if (pageName == "Custom URL") { %>selected<%}%>">
                 <a href="/appmgt/site/pages/customurl.jag?applicationKey=<%=applicationKey%>&selectedRevision=<%=selectedRevision%>"><i class="fa fa-link"></i>Custom URL</a>
         </li>
-        <li class="<% if (pageName == "settings") { %>selected<%}%>">
+        <li class="<% if (pageName == "Settings") { %>selected<%}%>">
                 <a href="/appmgt/site/pages/settings.jag?applicationKey=<%=applicationKey%>&selectedRevision=<%=selectedRevision%>"><i class="fw fw-settings"></i>Settings</a>
         </li>
 

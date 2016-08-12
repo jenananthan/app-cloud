@@ -57,7 +57,7 @@ var site = require("/site/conf/site.json");
                                 "name":"leftMenu",
                                 "inputs":{
                                     "applicationKey":applicationKey,
-                                    "pageName":"tags"
+                                    "pageName":"Tags"
                                 }
                             }
                         ]

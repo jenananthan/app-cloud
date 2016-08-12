@@ -106,11 +106,10 @@ jagg.template("runtimeLogs", function (inputs, outputs, jagg) {
                                                   </span>
                                 </div><!-- /input-group -->
                             </div><!-- /.col-lg-6 -->
-                            <label for="noOfLines" class="col-sm-1 control-label">No of lines : </label>
+                            <label for="noOfLines" class="col-sm-1 control-label">Number of Lines : </label>
                             <div class="col-sm-4">
                                 <select class="form-control" id="noOfLines">
-                                    <option value="10" selected="selected">10</option>
-                                    <option value="100">100</option>
+                                    <option value="100" selected="selected">100</option>
                                     <option value="500">500</option>
                                 </select>
                             </div>

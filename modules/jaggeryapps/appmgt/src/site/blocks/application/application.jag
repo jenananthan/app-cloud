@@ -35,13 +35,21 @@ var log = new Log();
         var applicationName = request.getParameter("applicationName");
         var appTypeName = request.getParameter("appTypeName");
         var applicationRevision = request.getParameter("applicationRevision");
-        var fileSuccessfullyUploaded = applicationModule.
-                            uploadExistingArchive(uploadedArtifact, appTypeName, applicationName, applicationRevision);
-        if (fileSuccessfullyUploaded) {
-            response.status = 200;
-            response.content = "Artifact is successfully uploaded!";
-        } else {
-            var msg = "Error while uploading file: " + uploadedArtifact.getName();
+
+        try {
+            var fileSuccessfullyUploaded = applicationModule.
+                                        uploadExistingArchive(uploadedArtifact, appTypeName, applicationName, applicationRevision);
+            if (fileSuccessfullyUploaded) {
+                response.status = 200;
+                response.content = "Artifact is successfully uploaded!";
+            } else {
+                var msg = "Error while uploading file: " + uploadedArtifact.getName();
+                log.error(msg);
+                response.status = 504;
+                response.content = msg + ". Please retry uploading";
+            }
+        } catch (e) {
+            var msg = "Uploaded artifact does not exist for application:" + applicationName + " version:" + applicationRevision;
             log.error(msg);
             response.status = 504;
             response.content = msg + ". Please retry uploading";
@@ -249,12 +257,10 @@ var log = new Log();
         var applicationHashId = applicationModule.getApplicationHashIdByName(applicationName);
         var applicationType = applicationModule.getApplication(applicationHashId).applicationType;
 
-        // delete application from kubernetes
-        applicationModule.deleteApplicationFromKubernetes(versionKey);
-
-        //Wait for the pod to get completely deleted
         try {
-            if (applicationModule.waitForPodToGetDeleted(applicationName, applicationRevision, versionKey, applicationType)) {
+            // delete application from kubernetes
+            var isDeleted = applicationModule.deleteApplicationFromKubernetes(versionKey);
+            if (isDeleted) {
                 // update application status to stopped
                 applicationModule.updateApplicationStatus(versionKey, APPLICATION_STOPPED);
                 applicationModule.deleteEventsOfAppVersions(versionKey);
@@ -262,8 +268,7 @@ var log = new Log();
                 response.message = "Application is successfully stopped.";
             } else {
                 response.status = 504;
-                response.content = "Unable to stop application within a time period of " + (podDeleteTimeOut/1000) +
-                        "s. Please submit request again.";
+                response.content = "Unable to stop application. Please submit request again.";
             }
         } catch (e) {
             var msg = "Error while waiting for the pod to get deleted for application: " + applicationName +
@@ -555,8 +560,9 @@ var log = new Log();
     } else if (action == "loadEndpoints") {
         var deploymentURL = request.getParameter("deploymentURL");
         var appType = request.getParameter("appType");
+        var versionId = request.getParameter("versionId");
         var mod = jagg.module("application");
-        var endpoints = mod.getEndpointsExtractor(appType).getEndpoints(deploymentURL);
+        var endpoints = mod.getEndpointsExtractor(appType).getEndpoints(deploymentURL, versionId);
         print(endpoints);
     } else {
         throw new Error("No action specified for: " + action);

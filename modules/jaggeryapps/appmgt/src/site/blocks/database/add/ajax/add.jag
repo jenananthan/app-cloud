@@ -23,7 +23,6 @@ include("/jagg/constants.jag");
 
 var log= new Log();
 var response = {};
-var DEFAULT_TEMPLATE = 'DEFAULT_ALL_PERMISSIONS';
 var databaseModule = jagg.module("databases");
 
 (function () {
@@ -40,6 +39,7 @@ var databaseModule = jagg.module("databases");
 		var customPassword = request.getParameter("customPassword");
         var userNameFromRequest = request.getParameter("userName");
         var isBasic = request.getParameter("isBasic");
+        var respObj = {};
 
         try{
             var databaseCount = databaseModule.getDatabaseCount();
@@ -53,7 +53,6 @@ var databaseModule = jagg.module("databases");
                 if (actualDBName.indexOf('already exists') > -1) {
                     print("database exists");
                 }
-
                 var userName;
                 if (isBasic === 'true') {
                     userName = mod.createDatabaseUser(userNameFromRequest, customPassword);
@@ -61,7 +60,6 @@ var databaseModule = jagg.module("databases");
                         isUserCreated = true;
                     }
                 }
-
                 var dbResult;
                 if (isBasic === 'true') {
                     dbResult = mod.attachNewUser(actualDBName, userName, DEFAULT_TEMPLATE);
@@ -72,16 +70,16 @@ var databaseModule = jagg.module("databases");
                 response.status = 400;
                 response.content = "Maximum number of databases that can be created is " + maxDatabases;
             }
-        }catch(e){
-            log.error(e);
+            respObj.actualDBName = actualDBName;
+            respObj.value = 'success';
+            respObj.userName = userName;
+            print(stringify(respObj));
+        } catch (e) {
+            response.status = 500;
+            response.content = "Error while creating database";
         }
-        var respObj = {};
-        respObj.actualDBName = actualDBName;
-        respObj.value = 'success';
-        respObj.userName = userName;
-        print(stringify(respObj));
 
-	}else if(action == "attachUserWithPermissions"){
+	} else if(action == "attachUserWithPermissions"){
         var dbname = request.getParameter("databaseName");
         var userName = request.getParameter("userName");
         try {

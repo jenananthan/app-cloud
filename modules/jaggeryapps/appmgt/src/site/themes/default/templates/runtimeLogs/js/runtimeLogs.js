@@ -114,21 +114,21 @@ function initData(selectedRevision, isFirstRequest){
                 if (revisionStatus == APPLICATION_STOPPED) {
                     clearInterval(timerId);
                     jagg.message({
-                        content: "Application is currently stopped. Please restart the application to obtain logs.",
+                        content: "The application is currently stopped. Please restart the application to see its logs.",
                         type: 'information',
                         id: 'view_log',
                         timeout: '20000'
                     });
-                    setLogArea("Logs are unavailable since the application has been stopped.", true);
+                    setLogArea("Logs are unavailable as the application is stopped.", true);
                 } else if (revisionStatus == APPLICATION_INACTIVE) {
                     clearInterval(timerId);
                     jagg.message({
-                        content: "Application is stopped due to inactivity. Please restart application to obtain logs.",
+                        content: "The application is stopped due to inactivity. Please restart it to see its logs.",
                         type: 'information',
                         id: 'view_log',
                         timeout: '20000'
                     });
-                    setLogArea("Logs are unavailable since the application has been stopped.", true);
+                    setLogArea("Logs are unavailable as the application is stopped..", true);
                 } else {
                     clearInterval(timerId);
                     jagg.message({
@@ -140,7 +140,7 @@ function initData(selectedRevision, isFirstRequest){
                 }
             }, function(jqXHR, textStatus, errorThrown) {
                 jagg.message({
-                    content: "Error occurred while getting application revision status.",
+                    content: "An error occurred while getting the application revision's status.",
                     type: 'error',
                     id: 'view_log'
                 });
@@ -148,7 +148,7 @@ function initData(selectedRevision, isFirstRequest){
         }
     },function (jqXHR, textStatus, errorThrown) {
         $('#revision').prop("disabled", false);
-        jagg.message({content: "Error occurred while loading the logs.", type: 'error', id:'view_log'});
+        jagg.message({content: "An error occurred while loading the logs.", type: 'error', id:'view_log'});
     });
 }
 
@@ -220,7 +220,7 @@ function downloadLogs(e) {
         }
     },function (jqXHR, textStatus, errorThrown) {
         $('#revision').prop("disabled", false);
-        jagg.message({content: "Error occurred while downloading the logs.", type: 'error', id:'view_log'});
+        jagg.message({content: "An error occurred while downloading the logs.", type: 'error', id:'view_log'});
     });
 }
 

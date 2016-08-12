@@ -76,6 +76,29 @@ var createTemplateWithAllPermissions = function (templateName){
     }
 };
 
+var dropTemplate = function (templateName) {
+    var ws = require('ws');
+    var dropDatabaseTemplate = new ws.WSRequest();
+    var options = new Array();
+    options.useSOAP = 1.2;
+    options.action = "urn:removeDatabasePrivilegeTemplate";
+    options.mep = "in-only";
+    var payload = '<ser:removeDatabasePrivilegeTemplate  xmlns:ser="http://service.core.rssmanager.carbon.wso2.org">' +
+            '<ser:environmentName>' + environmentName + '</ser:environmentName>' +
+            '<ser:templateName>' + templateName + '</ser:templateName></ser:removeDatabasePrivilegeTemplate>';
+
+    modManager.setAuthHeaders(options);
+    try {
+        dropDatabaseTemplate.open(options, storageServerURL + 'RSSAdmin', false);
+        dropDatabaseTemplate.send(payload);
+    } catch (e) {
+        log.error("Error while dropping database template : " + templateName);
+        log.error(e);
+        throw e;
+    }
+
+};
+
 var isDatabasePrivilegeTemplateExist = function (templateName){
     var ws = require('ws');
     var isDatabasePrivilegeTemplateExistService = new ws.WSRequest();

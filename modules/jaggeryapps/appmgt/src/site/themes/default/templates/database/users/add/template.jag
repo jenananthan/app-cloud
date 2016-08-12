@@ -55,7 +55,7 @@ jagg.template("database/users/add", function(inputs, outputs, jagg) { %>
 
 				<div class="form-group col-md-6 password_strength_meter">
 						<label for="password">Password: </label>
-						<input type="password" class="form-control" id="password" name="password"  placeholder="add your password"
+						<input type="password" class="form-control" id="password" name="password"  placeholder="Add your password"
 							   data-schemaformat="password" >
 						 <div id="password_strength_wrap">
                             <div class="pwd_str">
@@ -82,7 +82,7 @@ jagg.template("database/users/add", function(inputs, outputs, jagg) { %>
 						<label for="password-confirm">Confirm Password: </label>
 						<input type="password" class="form-control eye-icon" id="password-confirm"
 						name="password-confirm"
-							   placeholder="confirm your password" data-schemaformat="password">
+							   placeholder="Confirm your password" data-schemaformat="password">
 				</div>
 
 				<div class="clearfix"></div>

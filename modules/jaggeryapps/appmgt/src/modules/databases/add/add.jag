@@ -50,7 +50,6 @@ var createDatabase = function (databaseName) {
 	'<xsd:rssInstanceName>'+ wso2_rss_instanceName +'</xsd:rssInstanceName>'+
 	'</ser:database>'+
 	'</ser:addDatabase>';
-	
 
 	try {
 		modManager.setAuthHeaders(options);
@@ -63,14 +62,11 @@ var createDatabase = function (databaseName) {
 		var ax = new Namespace("http://dto.core.rssmanager.carbon.wso2.org/xsd");
 		result=entry.ax::["name"].text();
         return result;
-
 	} catch (e) {
-
 		log.error("Error while creating database : " + databaseName);
 		log.error(e);
 		throw e;
 	}
-
 };
 
 
@@ -204,7 +200,7 @@ function buildResponse(result){
 	var databaseObject=[];
 
 	if(result != undefined){
-		var response=result.*::["return"]
+		var response=result.*::["return"];
 		for(var index=0; index < response.length();index++){
 			var task={
 			};

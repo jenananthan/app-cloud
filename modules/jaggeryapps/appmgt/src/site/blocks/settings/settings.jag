@@ -34,7 +34,8 @@ var mod = jagg.module("application");
         var defaultVersion = request.getParameter("defaultVersion");
 
         try {
-            mod.changeMappedDomain(applicationName, defaultVersion);
+            var result = mod.changeMappedDomain(applicationName, defaultVersion);
+            print(result);
         } catch (e) {
             var message = "Error while updating version : " + defaultVersion + " to the default version";
             log.error(message);

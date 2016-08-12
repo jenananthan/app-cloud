@@ -70,7 +70,7 @@ function stripedUrl(url){
 }
 
 function verifyCustomUrlSuccess() {
-    jagg.message({content: "Custom domain successfully added to application.", type: 'success', id: 'view_log'});
+    jagg.message({content: "The custom domain was successfully added to the application.", type: 'success', id: 'view_log'});
     uiElementStateChange(true, true, true);
     showUpdateButton();
     $('#updateCustomUrl').prop('disabled', false);
@@ -102,7 +102,7 @@ function updateCustomUrl() {
         customUrl: customUrl,
         applicationName: applicationName
     }, function (result) {
-        jagg.message({content: "Custom domain successfully updated.", type: 'success', id: 'view_log'});
+        jagg.message({content: "The custom domain is successfully updated.", type: 'success', id: 'view_log'});
         showEditButton();
     }, function (jqXHR, textStatus, errorThrown) {
         jagg.message({content: jqXHR.responseText, type: 'error', id: 'view_log'});

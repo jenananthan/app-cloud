@@ -145,7 +145,7 @@ $(document).ready(function () {
                 });
             } else {
                 jagg.message({
-                    content: "Successfully added user "+$('#username').val(),
+                    content: "The user " + $('#username').val() + " is successfully added.",
                     type: 'success',
                     id: 'myuniqeid'
                 });
