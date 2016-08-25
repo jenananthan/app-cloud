@@ -119,6 +119,7 @@ public abstract class AppCloudIntegrationBaseTestCase {
 		String launchURL = ((JSONObject) ((JSONObject) applicationBean
 				.get(AppCloudIntegrationTestConstants.PROPERTY_VERSIONS_NAME))
 				.get(applicationRevision)).getString(AppCloudIntegrationTestConstants.PROPERTY_DEPLOYMENT_URL);
+		launchURL += this.applicationContext;
         //make the launch url http
 		launchURL = launchURL.replace("https", "http");
 		Boolean isLaunchSuccessfull = applicationClient.launchApplication(launchURL, sampleAppContent);
@@ -441,7 +442,7 @@ public abstract class AppCloudIntegrationBaseTestCase {
 			JSONObject applicationBean = applicationClient.getApplicationBean(applicationName);
 			String defaultVersionLaunchURL = applicationBean
 					.getString(AppCloudIntegrationTestConstants.DEFAULT_VERSION_URL);
-
+			defaultVersionLaunchURL += this.applicationContext;
 			//make the launch url http
 			defaultVersionLaunchURL = defaultVersionLaunchURL.replace("https", "http");
 			return applicationClient.launchApplication(defaultVersionLaunchURL, sampleAppContent);

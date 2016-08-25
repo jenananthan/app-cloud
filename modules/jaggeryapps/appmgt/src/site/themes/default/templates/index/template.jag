@@ -130,7 +130,7 @@ jagg.template("index", function(inputs, outputs, jagg) {
 
                             '<div class="cloud-app-listing app-color-one">'+
                                     '<a href="/appmgt/site/pages/home.jag?applicationKey=' + application.hashId + '">'+
-                                    '<i class="fw '+application.appTypeIcon+' fw-2x app-type-icon" data-toggle="tooltip" data-placement="right" title=' + application.appTypeTitle + '></i>' +
+                                    '<i class="fw '+application.appTypeIcon+' fw-2x app-type-icon" data-toggle="tooltip" data-placement="right" title="' + application.appTypeTitle + '"></i>' +
                                      appIcon +
                                     '<div class="app-name">' + displayName + '</div>' +
                                     '</a>' +
@@ -296,13 +296,13 @@ jagg.template("index", function(inputs, outputs, jagg) {
         <div class="row row-centered">
             <div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6">
                 <div class="cloud-new-content">
-                    <h1>New to WSO2 <%=cloudTitle%> ?</h1>
+                    <h1>New to WSO2 <%=cloudTitle%>?</h1>
                     <% if (appTypeCount == 1) { %>
                     <a id="app-create-button" class="cu-btn cu-btn-md cu-btn-blue" href="<%=jagg.getAbsoluteUrl("/site/pages/application.jag")%>?appTypeName=<%=appType%>">
                     <% } else { %>
                     <a id="app-create-button" class="cu-btn cu-btn-md cu-btn-blue" href="/appmgt/site/pages/select-apptype.jag">
                     <% } %>
-                      Create your first <%=cloudSpecificApplicationRepresentation%></a>
+                      Create your first <%=cloudSpecificApplicationRepresentation.toLowerCase()%></a>
                     <!--div class="help">
                         <i class="fa fa-2x fa-book"></i> Need help ? Read App creation guide first..
                     </div-->

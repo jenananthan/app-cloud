@@ -38,7 +38,7 @@ jagg.block("application", {
         var appTypesProperties = require(parsedObject);
         var appType = appTypesProperties[inputs.appTypeName];
         var applicationName = inputs.applicationName;
-        var applicationCount = applicationModule.getApplicationCount();
+        var applicationCount = applicationModule.getRunningApplicationVersionCount();
         var subscriptionPlanBaseURL = modManager.getPropertyValue("SubscriptionPlanBaseURL");
         var notAllowedEnvVariables = applicationModule.getNotAllowedEnvVariables();
         var maxAppCount = applicationModule.getMaxInstanceCount();

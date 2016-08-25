@@ -47,19 +47,11 @@ var addApplicationViaGitHub = function (applicationName, versionName, applicatio
                                         gitHubRepoBranch, projectRoot, token, isNewVersion, conSpecMemory, conSpecCpu,
                                         appCreationMethod, applicationContext, setDefaultVersion) {
 
-    log.info("Started creating App => Name:" + applicationName +
-    " Version:" + versionName +
-    " Description:" + applicationDescription +
-    " RuntimeId:" + runtimeId +
-    " AppType:" + appTypeName +
-    " Runtime Properties:" + JSON.stringify(runtimePropertiesArray) +
-    " Tags:" + JSON.stringify(tagArray) +
-    " App Icon:" + JSON.stringify(appIcon) +
-    " New Version:" + isNewVersion +
-    " Allocated Memory:" + conSpecMemory +
-    " Allocated CPU:" + conSpecCpu +
-    " App Creation Method:" + appCreationMethod +
-    " Context:" + applicationContext +
+    log.info("Started creating App => Name:" + applicationName + " Version:" + versionName + " Description:" + applicationDescription +
+    " RuntimeId:" + runtimeId + " AppType:" + appTypeName + " Runtime Properties:" + JSON.stringify(runtimePropertiesArray) +
+    " Tags:" + JSON.stringify(tagArray) + " GitHub RepoUrl:" + gitHubRepoUrl + " GitHub Repo Branch:" + gitHubRepoBranch +
+    " Project Root:" + projectRoot + " Token:" + token + " New Version:" + isNewVersion + " Allocated Memory:" + conSpecMemory +
+    " Allocated CPU:" + conSpecCpu + " App Creation Method:" + appCreationMethod + " Context:" + applicationContext +
     " DefaultVersion:" + setDefaultVersion);
 
     var tenantId = modManager.getTenantId();
@@ -114,14 +106,18 @@ var createDockerFileForGitHub =  function(applicationName, versionName, runtimeI
                                           projectRoot, versionHashId, dockerClient, appCreationMethod, runtimePropertiesArray, conSpecMemory){
     var msg = "Docker file creation successfully triggered in appcloud";
     appManager.addEvent(DOCKER_FILE_CREATE, EVENT_PENDING, msg, versionHashId);
+    if (log.isDebugEnabled()) {
+        log.debug("Start creating docker file for version:" + versionHashId);
+    }
     var absFileUploadedPath;
-
     try {
         var absFileUploadedPath = appManager.getVersionDirectoryPath(versionHashId);
         var dockerFilePath = absFileUploadedPath + DOCKER_FILE_NAME;
         var dockerTemplateFilePath = modManager.getPropertyValue(PROPERTY_APPMGT_DEPLOYMENT_DIR_PATH) + "/" + "dockerfiles";
+        if (log.isDebugEnabled()) {
+            log.debug("Docker file path for deployment: " + dockerFilePath);
+        }
         var hostName = appManager.getAppLaunchURL(applicationName, versionName);
-
         var dockerFilePropertyMap = new java.util.HashMap();
         dockerFilePropertyMap.put("GIT_REPO_URL", gitHubRepoUrl);
         dockerFilePropertyMap.put("GIT_REPO_BRANCH", gitHubRepoBranch);
@@ -129,7 +125,6 @@ var createDockerFileForGitHub =  function(applicationName, versionName, runtimeI
         dockerFilePropertyMap.put("HOST_NAME", hostName);
         dockerFilePropertyMap.put("VAL_TOTAL_MEMORY", conSpecMemory);
         var appRuntimeProperties = appManager.getRuntimePropertyMap(runtimePropertiesArray);
-
         dockerClient.createDockerFile(dockerFilePath, runtimeId, dockerTemplateFilePath, appCreationMethod, dockerFilePropertyMap, appRuntimeProperties);
     } catch(e){
         var msg = "Error while creating docker file";
@@ -143,7 +138,6 @@ var createDockerFileForGitHub =  function(applicationName, versionName, runtimeI
             log.error(e1);
             // not throwing the error, because it will hide the actual exception
         }
-
         log.error(msg);
         log.error(e);
         log.info("Application creation failed because docker file creation failed and roll back process" +

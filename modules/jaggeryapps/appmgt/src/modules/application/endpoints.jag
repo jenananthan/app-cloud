@@ -73,7 +73,7 @@ MSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionI
     var endpoints = undefined;
     try {
         // check whether accessible
-        get(swaggerUrl, {}, "json");
+        //get(swaggerUrl, {}, "json");
 
         var swaggerEndpoints = [];
         swaggerEndpoints.push({context : "/swagger", url: swaggerUrl});
@@ -129,7 +129,7 @@ ESBEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionI
             }
         }
 
-        endpoints = createJsonResponse(restEndpoints, soapEndpoints, null);
+        endpoints = createJsonResponse(restEndpoints, soapEndpoints, null, null);
     } catch(e) {
         return undefined;
     }
@@ -142,7 +142,35 @@ JaggeryEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, vers
 };
 
 DSSEndpointsExtractor.prototype.getEndpoints = function (deploymentUrl, versionId) {
-    return ;
+    var ws = require('ws');
+    var getEndpoints = new ws.WSRequest();
+    var options = new Array();
+    options.useSOAP = 1.1;
+    options.action = "dss:getEndpoints";
+    var payload = '<dss:getEndpoints xmlns:dss="http://integration.dss.appcloud.wso2.org" />';
+
+    var endpoints = undefined;
+    try {
+        getEndpoints.open(options, deploymentUrl + '/services/DataServiceContainerService', false);
+        getEndpoints.send(payload);
+        var result = getEndpoints.responseE4X;
+
+        var soapEndpoints = [];
+        if (result != undefined) {
+            var ns = new Namespace("http://integration.dss.appcloud.wso2.org");
+            var response = result.ns::["return"];
+            for (var index=0; index < response.length(); index++) {
+                var entry = response[index];
+                soapEndpoints.push({name : entry.text(), wsdl : deploymentUrl + "/services/" + entry.text() + "?wsdl"});
+            }
+        }
+
+        endpoints = createJsonResponse(null, soapEndpoints, null, null);
+    } catch (e) {
+        return undefined;
+    }
+
+    return endpoints;
 };
 
 
@@ -227,11 +255,10 @@ var getEndpointsWithApplicationContext = function (deploymentUrl, versionId) {
     var endpoints = undefined;
     try {
         // check whether accessible
-        get(webUrl, {}, "text");
+        // get(webUrl, {}, "text");
 
         endpoints = createJsonResponse(null, null, webEndpoints, null);
     } catch (e) {
-        log.info(e);
         return undefined;
     }
     return endpoints;

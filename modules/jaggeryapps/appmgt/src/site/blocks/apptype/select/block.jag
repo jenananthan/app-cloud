@@ -27,18 +27,17 @@ jagg.block("apptype/select", {
         var appTypePropertyConfPath = jagg.getAppTypePropertyConfFilePath();
         var parsedObject = parse(appTypePropertyConfPath);
         var appTypesProperties = require(parsedObject);
+        var manager = jagg.module("manager");
         if (appTypes.length > 0) {
             //Adding css properties to apptype objects
             for (var index in appTypes) {
                 appTypes[index].cssProperties = appTypesProperties[appTypes[index].name];
+                appTypes[index].docUrl = manager.getPropertyValue(appTypes[index].name + DOC_URL);
             }
         }
-        var manager = jagg.module("manager");
-        var cloudTypeProperties = manager.getCloudTypeProperties();
-        var docLink = manager.getPropertyValue(cloudTypeProperties.properties.documentationUrl);
+
         return {
-            "appTypes": appTypes,
-            "docLink" : docLink
+            "appTypes": appTypes
         };
     }
 });

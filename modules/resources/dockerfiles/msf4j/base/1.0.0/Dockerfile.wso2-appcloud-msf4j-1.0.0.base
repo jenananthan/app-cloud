@@ -25,9 +25,13 @@ ENV PATH $MSF4J_HOME:$PATH
 ENV HTTPS_CONF /opt/conf/https/
 ENV JAVA_OPTS="-Xms128m -Xmx128m -XX:MaxMetaspaceSize=128m"
 
-RUN mkdir -p "$MSF4J_HOME" && \
+RUN apk update && \
+    apk add wget openjdk8 && \
+    mkdir -p "$MSF4J_HOME" && \
     mkdir -p "$HTTPS_CONF/" && \
     addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/jre/
 
 COPY wso2carbon.jks "$HTTPS_CONF"
 COPY netty-transports.yaml "$HTTPS_CONF"

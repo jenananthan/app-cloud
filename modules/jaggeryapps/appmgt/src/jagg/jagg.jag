@@ -633,7 +633,8 @@ return getThemePath() + path;
         getCloudTypePropertyConfFilePath:getCloudTypePropertyConfFilePath,
         getIssuer:getIssuer,
         setSelectedCloud:setSelectedCloud,
-        getSelectedCloud:getSelectedCloud
+        getSelectedCloud:getSelectedCloud,
+        findSelectedCloud:findSelectedCloud
     };
 
 }());

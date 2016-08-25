@@ -821,11 +821,11 @@ public class ApplicationManager {
      * @return application count
      * @throws AppCloudException
      */
-    public static int getApplicationCount(String cloudType) throws AppCloudException {
+    public static int getRunningApplicationVersionCount(String cloudType) throws AppCloudException {
         Connection dbConnection = DBUtil.getDBConnection();
         int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
-            return ApplicationDAO.getInstance().getApplicationCount(dbConnection, tenantId, cloudType);
+            return ApplicationDAO.getInstance().getRunningApplicationVersionCount(dbConnection, tenantId, cloudType);
         } catch (AppCloudException e) {
             String msg =
                     "Error while getting application count for tenant id : " + tenantId + " and cloud : " + cloudType;

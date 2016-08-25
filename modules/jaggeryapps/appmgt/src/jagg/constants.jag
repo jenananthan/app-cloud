@@ -74,7 +74,8 @@ var FILE_EXTENSTION_ALTER = ".upload";
 var FILE_EXTENTION_ZIP = "zip";
 
 var PERMISSION_EXECUTE = "ui.execute";
-var LOGIN_PERMISSION = "AppCloud.Login.Permission"
+var LOGIN_PERMISSION = ".Login.Permission";
+var DOC_URL = "_doc_url";
 
 var CLOUD_TYPES_PROPERTIES_CONFIG = "/jagg/cloud-types-properties.json";
 var SELECTED_CLOUD = "SELECTED_CLOUD";

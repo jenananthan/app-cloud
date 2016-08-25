@@ -1,23 +1,39 @@
 To start with your local setup, you need to add below jars in current directory.
 
-├── lib
-│   ├── docker-java-2.1.4.jar
-│   ├── mysql-connector-java-5.1.27-bin.jar
-│   ├── nimbus-jose-jwt_2.26.1.wso2v2.jar
-│   ├── org.wso2.carbon.hostobjects.sso_4.2.0.jar
-│   └── signedjwt-authenticator_4.3.3.jar
-├── patches
-│   └── wso2ss-1.1.0
-│       ├── patch0298
-│       │   ├── org.wso2.carbon.rssmanager.common-4.2.0.jar
-│       │   ├── org.wso2.carbon.rssmanager.core-4.2.0.jar
-│       │   └── org.wso2.carbon.rssmanager.ui-4.2.0.jar
-│       ├── patch0351
-│       │   ├── org.wso2.carbon.rssmanager.core_4.2.0.jar
-│       │   └── org.wso2.carbon.rssmanager.ui_4.2.0.jar
-│       └── patch1085
-│           └── org.wso2.carbon.rssmanager.core_4.2.0.jar
-
+└── lib
+    ├── commons-codec-1.10.0.wso2v1.jar
+    ├── commons-codec-1.10.wso2v1.jar
+    ├── commons-compress-1.9.0.wso2v1.jar
+    ├── commons-compress-1.9.wso2v1.jar
+    ├── dnsjava-2.1.7.wso2v1.jar
+    ├── docker-client-1.0.10.wso2v1.jar
+    ├── docker-dsl-1.0.10.jar
+    ├── docker-model-1.0.10.jar
+    ├── dsl-annotations-0.1.26.wso2v1.jar
+    ├── fabric8-utils-2.2.100.jar
+    ├── jackson-annotations-2.7.3.jar
+    ├── jackson-core-2.7.3.jar
+    ├── jackson-databind-2.7.3.jar
+    ├── jackson-dataformat-yaml-2.7.3.jar
+    ├── jaxb-api-2.2.jar
+    ├── json-20160212.jar
+    ├── junixsocket-common-2.0.4.wso2v1.jar
+    ├── kubernetes-client-1.3.76.wso2v1.jar
+    ├── kubernetes-model-1.0.43.wso2v1.jar
+    ├── logging-interceptor-2.7.2.wso2v1.jar
+    ├── mysql-connector-java-5.1.27-bin.jar
+    ├── nimbus-jose-jwt_2.26.1.wso2v2.jar
+    ├── okhttp-2.7.2.wso2v1.jar
+    ├── okhttp-ws-2.7.2.wso2v1.jar
+    ├── okio-1.6.0.wso2v1.jar
+    ├── org.wso2.carbon.hostobjects.sso_4.2.1.jar
+    ├── signedjwt-authenticator_4.3.3.jar
+    ├── slf4j-api-1.7.12.wso2v1.jar
+    ├── snakeyaml-1.15.jar
+    ├── sundr-codegen-0.1.25.wso2v1.jar
+    ├── sundr-core-0.1.25.wso2v1.jar
+    ├── validation-api-1.1.0.Final.jar
+    └── velocity-1.7.0.wso2v1.jar
 
 * If you are using DAS for the Dashboard, you need to install SSO module 1.4.4 from the feature repo http://product-dist.wso2.com/p2/carbon/releases/wilkes to DAS.
 

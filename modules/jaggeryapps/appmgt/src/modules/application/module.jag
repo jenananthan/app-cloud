@@ -186,8 +186,8 @@ jagg.module("application", {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").deleteVersion.apply(this, arguments);
     },
 
-	getApplicationCount:function() {
-        return jagg.require(jagg.getModulesDir() + "application/application.jag").getApplicationCount.apply(this, arguments);
+	getRunningApplicationVersionCount:function() {
+        return jagg.require(jagg.getModulesDir() + "application/application.jag").getRunningApplicationVersionCount.apply(this, arguments);
     },
 
     verifyCustomUrl: function () {

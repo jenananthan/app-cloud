@@ -5,6 +5,6 @@
     "mss":{"type":"mss", "icon":"fw-micro-services", "color":"app-color-two", "displayName":"Java Microservice", "buildable":"true", "extension":"jar", "defaultContext":"/", "appContext" : "false"},
     "wso2esb":{"type":"wso2esb", "icon":"fw-carbon", "color":"app-color-three", "displayName":"WSO2 ESB Project", "buildable":"true", "extension":"car", "defaultContext":"/", "appContext" : "false"},
     "carbon":{"type":"carbon", "icon":"fw-carbon", "color":"app-color-six", "displayName":"WSO2 Carbon Server", "buildable":"true", "extension":"car", "defaultContext":"/", "appContext" : "false"},
-    "jaggery":{"type":"jaggery", "icon":"fw-jaggery", "color":"app-color-six", "displayName":"WSO2 Jaggery Application", "buildable":"false", "extension":"zip", "defaultContext":"/", "appContext" : "true"},
+    "jaggery":{"type":"jaggery", "icon":"fw-jaggery", "color":"app-color-six", "displayName":"WSO2 Jaggery Application", "buildable":"true", "extension":"war", "defaultContext":"/", "appContext" : "true"},
     "wso2dataservice":{"type":"wso2dataservice", "icon":"fw-dss", "color":"app-color-seven", "displayName":"WSO2 Data Service", "buildable":"false", "extension":"car", "defaultContext":"/services/<Service_Name>?wsdl", "appContext" : "false"}
 }

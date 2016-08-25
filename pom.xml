@@ -218,6 +218,7 @@
     <modules>
         <module>modules/components/org.wso2.appcloud.common</module>
         <module>modules/components/org.wso2.appcloud.core</module>
+        <module>modules/components/org.wso2.appcloud.dss.integration</module>
         <module>modules/components/org.wso2.appcloud.provisioning.runtime</module>
         <module>modules/jaggeryapps/appmgt</module>
         <module>modules/webapps/appCloudTierapi</module>

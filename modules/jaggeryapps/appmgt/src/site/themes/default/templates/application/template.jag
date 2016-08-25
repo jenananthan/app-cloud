@@ -35,7 +35,6 @@ jagg.template("application", function (inputs, outputs, jagg) {
         var decodedLabels = parse(decodeURIComponent(encodedLabels, "UTF-8"));
         var decodedEnvs = parse(decodeURIComponent(encodedEnvs, "UTF-8"));
         var newVersion = request.getParameter("newVersion");
-        var nextVersion = request.getParameter("nextVersion");
         var data = null;
         var allowedRuntimeContainerSpecJson = outputs.allowedContainerSpecs;
 		var maxApplications = outputs.maxAppCount;
@@ -43,6 +42,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
         var appTypeCount = outputs.appTypeCount;
         var cloudSpecificApplicationRepresentation = outputs.cloudSpecificApplicationRepresentation;
         var applications = outputs.applications;
+        var versionList = request.getParameter("versionArray");
     %>
 
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/bootstrap-3.2.0/bootstrap.min.css'))%>">
@@ -64,7 +64,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
     const APP_TYPE_EXTENSION = "<%=appType.extension%>";
     var applicationName = "<%=applicationName%>";
     var cloudSpecificApplicationRepresentation = "<%=cloudSpecificApplicationRepresentation%>";
-    var applicationCount = <%=applicationCount%>
+    var applicationCount = <%=applicationCount%>;
     var maxApplications = <%=maxApplications%>;
     var conSpecs = <%=conSpecs%>;
     var retryCount = 0;
@@ -87,9 +87,9 @@ jagg.template("application", function (inputs, outputs, jagg) {
     var fileMoved = false;
     var envKeyRegex = new RegExp("<%=ENV_KEY_REGEX%>");
     var applicationList = <%=applications%>;
+    var versionList = "<%=versionList%>";
 
     $(document).ready(function(){
-
             if (newVersion == "true") {
                 isNewVersion = true;
             }
@@ -99,7 +99,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 containerSpecNamesJson.push(allowedRuntimeContainerSpecJson.data[i].conSpecName);
             }
 
-            //Set conatiner specifications in the select option
+            //Set container specifications in the select option
             if (containerSpecNamesJson.length > 0) {
                 var listItems = '<option selected="selected" onClick="maxApplicationCountValidate()">' +
                     containerSpecNamesJson[0] + '</option>';
@@ -115,16 +115,13 @@ jagg.template("application", function (inputs, outputs, jagg) {
             //Set select2 container
             var valueElem = $('#value')[0];
             initSelect2(null, valueElem, "");
-
-            if (!isNewVersion) {
-                if (applicationCount >= maxApplications) {
-                    $('#outerContainer').empty();
-                    $('#outerContainer').html('<div class="container-fluid"><div class="row row-centered">' +
-                        '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
-                        '<h3>You cannot create more than ' + maxApplications + cloudSpecificApplicationRepresentation + ' on a free subscription. ' +
-                        'Please delete an existing application to continue...</h3></div></div></div></div>');
-                    return;
-                }
+            if (applicationCount >= maxApplications) {
+                $('#outerContainer').empty();
+                $('#outerContainer').html('<div class="container-fluid"><div class="row row-centered">' +
+                    '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
+                    '<h3>You cannot have more than ' + maxApplications + " running " + cloudSpecificApplicationRepresentation.toLowerCase() + ' versions on a free subscription. ' +
+                    'Please stop an existing ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' version to continue.</h3></div></div></div></div>');
+                return;
             }
 
             $("containerSpec").select2();
@@ -273,14 +270,11 @@ jagg.template("application", function (inputs, outputs, jagg) {
                         type: 'POST',
                         data: formData,
                         success: function(data) {
-                            if (isNewVersion) {
-                                jagg.message({
-                                    content: "You can start only one version of an " + cloudSpecificApplicationRepresentation + " at a time on" +
-                                        " a free subscription. Other versions were stopped automatically.",
-                                    type: 'info',
-                                    timeout: 3500
-                                });
-                            }
+                            jagg.message({
+                                content: "Your " + cloudSpecificApplicationRepresentation.toLowerCase() + " started successfully",
+                                type: 'success',
+                                timeout: 3500
+                            });
                         },
                         cache: false,
                         contentType: false,
@@ -500,8 +494,8 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 },
                 applicationRevision: {
                     required: true,
-                    validateContent: true,
-                    validationApplicationRevisionChar: true
+                    validationApplicationRevisionChar: true,
+                    checkApplicationVersionExistence: true
                 },
                 icon: {                                     // app icon field
                     validateAppIcon: true
@@ -558,6 +552,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
         $.validator.addMethod("validateAppIcon", validateAppIcon, getIconErrorMessage);
         $.validator.addMethod("validateApplicationNameChar", validateApplicationNameChar, getValidationFailErrorMsg);
         $.validator.addMethod("validationApplicationRevisionChar", validationApplicationRevisionChar, getValidationFailErrorMsg);
+        $.validator.addMethod("checkApplicationVersionExistence", checkApplicationVersionExistence, "This version is already exists for this application");
         $.validator.addMethod("validateRuntimeSelection", validateRuntimeSelection, "Please select a valid runtime");
         $.validator.addMethod("validateArtifact", validateArtifact, getArtifactErrorMessage);
         $.validator.addMethod("validateEnvironmentVariable", validateEnvironmentVariable, getEnvVariableErrorMsg);
@@ -630,11 +625,10 @@ jagg.template("application", function (inputs, outputs, jagg) {
         }
 
         function validationApplicationRevisionChar(value) {
-            var patternNonAlphaNum = /^(?:(\d{1,2})\.)?(?:(\d{1,2})\.)?(\*|\d{1,2})$/g;
+            var patternNonAlphaNum = /[^a-zA-Z\d\-\_.]/g;
             var isPatternMatch = patternNonAlphaNum.test(value);
-            validationFailErrorMsg = "Invalid version number - Provide version number in format major.minor.patch";
-
-            return isPatternMatch;
+            validationFailErrorMsg = "Invalid version - Valid characters are [a-z, A-Z, 0-9, _, ., -]";
+            return !isPatternMatch;
         }
 
         function validateRuntimeSelection(value){
@@ -721,7 +715,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
 
     function activateCreateApplication() {
         if ($('#applicationName').val() && $('#applicationRevision').val() && $('#container option:selected').val()
-                        && $('#runtime').val() > 0 && ($("#uploadedFileName").val() || $("#artifactUrl").val() || ($("#gitRepoUrl").val()  && $("#gitRepoBranch").val()))) {// checks form for validity
+                        && checkApplicationVersionExistence($('#applicationRevision').val()) && $('#runtime').val() > 0 && ($("#uploadedFileName").val() || $("#artifactUrl").val() || ($("#gitRepoUrl").val()  && $("#gitRepoBranch").val()))) {// checks form for validity
 
             if($("#uploadedFileName").val() && progress == 100){
                 if(validateArtifactType($("#uploadedFileName").val())){
@@ -782,6 +776,20 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 });
             }
         }
+    }
+
+    function checkApplicationVersionExistence(version){
+        var existingVersions = versionList.split(",");
+        var version = version.toLowerCase() ;
+        var verionMatch;
+        for (var i = 0; i < existingVersions.length; i++){
+            var existingVerion = existingVersions[i].toLowerCase();
+            verionMatch = existingVerion.localeCompare(version.toLowerCase());
+            if(verionMatch === 0){
+                break;
+            }
+        }
+        return !(verionMatch === 0);
     }
 
      function clearUploadIconField() {
@@ -986,29 +994,35 @@ jagg.template("application", function (inputs, outputs, jagg) {
 
       <form id="application-details" method="post" action='<%=jagg.getAbsoluteUrl("/site/blocks/application/application.jag")%>' enctype="multipart/form-data">
             <div class="form-group">
-                <label for="application-name"><%=cloudSpecificApplicationRepresentation%> Name: </label>
+                <label for="application-name"><%=cloudSpecificApplicationRepresentation%> Name: *</label>
                 <input id="applicationName" name="applicationName" type="text" class="form-control" placeholder="Enter <%=cloudSpecificApplicationRepresentation.toLowerCase()%> name" />
             </div>
 
         <% if(newVersion){ %>
-            <div class="form-group">
-            <label for="application-version"><%=cloudSpecificApplicationRepresentation%> Version:
-                <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Set the version in the form <Major>.<Minor>.<Patch>"></i>
-            </label>
-            <input id="applicationRevision" name="applicationRevision" type="text" class="form-control" value="<%=nextVersion%>"/>
-            </div>
-            <div class="form-group">
-                    <label>Your current default version is <%=defaultVersion%></label>
-                       <div class="checkbox">
-                          <label>
-                           <input type="checkbox" name="defaultversion" id="default_version" value="deploy-sample" class="custom-checkbox" checked/>Make this the default version
-                          </label>
-                       </div>
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="form-group">
+                        <label for="application-version"><%=cloudSpecificApplicationRepresentation%> Version: *
+                            <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Valid characters for application version are [a-z, A-Z, 0-9, _, ., -]"></i>
+                        </label>
+                        <input id="applicationRevision" name="applicationRevision" type="text" class="form-control" placeholder="Set the new application version here"/>
+                        <label>Your current default version is <%=defaultVersion%></label>
                     </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <div class="checkbox">
+                          <label>
+                           <input type="checkbox" name="defaultversion" id="default_version" value="deploy-sample" class="custom-checkbox"/>Make this the default version
+                          </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
                 <% } else { %>
             <div class="form-group">
-            <label for="application-version"><%=cloudSpecificApplicationRepresentation%> Version:
-                <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Set the version in the form <Major>.<Minor>.<Patch>"></i>
+            <label for="application-version"><%=cloudSpecificApplicationRepresentation%> Version: *
+                <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Valid characters for application version are [a-z, A-Z, 0-9, _, ., -]"></i>
             </label>
             <input id="applicationRevision" name="applicationRevision" type="text" class="form-control" value="1.0.0"/>
             </div>
@@ -1028,7 +1042,8 @@ jagg.template("application", function (inputs, outputs, jagg) {
             </select>
             </div-->
 
-            <div class="form-group col-md-12">
+            <div class="form-group">
+
                 <label class="radio-inline">
                     <input type="radio" name="fileUploadRadioOptions" id="inlineRadio1" value="upload-from-file"
                            checked="checked" class="custom-radio"> Upload from file system
@@ -1050,6 +1065,9 @@ jagg.template("application", function (inputs, outputs, jagg) {
             </div>
 
             <div class="form-group" id="file-upload-block">
+                <div>
+                    <label for="application-description" >Upload a <b>.<%=appType.extension.toUpperCase()%></b> file: *</label>
+                </div>
                 <div class="input-group">
                     <input id="uploadedFileName" name="uploadedFileName" type="text" class="form-control" readonly>
                     <span class="input-group-btn">
@@ -1064,6 +1082,9 @@ jagg.template("application", function (inputs, outputs, jagg) {
             </div>
 
             <div class="form-group" id="url-upload-block">
+                <div>
+                    <label for="application-description" >Upload a <b>.<%=appType.extension.toUpperCase()%></b> file: *</label>
+                </div>
                 <div class="input-group">
                     <input id="artifactUrl" name="artifactUrl" type="text" class="form-control" placeholder="Enter artifact URL" />
                     <span class="input-group-btn">
@@ -1096,14 +1117,14 @@ jagg.template("application", function (inputs, outputs, jagg) {
             </div>
 
             <div class="form-group">
-                <label for="runtime">Runtime:
-                    <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Select an appropriate runtime to run your <%=cloudSpecificApplicationRepresentation%>"></i>
+                <label for="runtime">Runtime: *
+                    <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left" title="Select an appropriate runtime to run your <%=cloudSpecificApplicationRepresentation.toLowerCase()%>"></i>
                 </label>
                 <select name="runtime" id="runtime" class="form-control"></select>
             </div>
 
 			<div class="form-group">
-                <label for="container">Container Specification: </label>
+                <label for="container">Container Specification: *</label>
                 <select name="container" id="container" class="form-control" ></select>
             </div>
 
@@ -1121,7 +1142,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
                 <div class="form-group">
                     <label for="application-icon">Icon:
                         <i class="fa fa-question-circle help-tips" data-toggle="tooltip" data-placement="left"
-                    title="Recommended image size: 300x300 pixels and file size: 70KB (maximum)"></i>
+                    title="Recommended image size is 300x300 pixels and the maximum file size is 70KB"></i>
                     </label>
                     <div class="input-group">
                         <input type="text" id="icon" name="icon" class="form-control" readonly>
@@ -1143,11 +1164,11 @@ jagg.template("application", function (inputs, outputs, jagg) {
                             <h4 class="panel-title">
                                 <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
                                     Environment Variables
-                                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                                    <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-down"></i></span>
                                 </a>
                             </h4>
                         </div>
-                        <div id="collapseOne" class="panel-collapse collapse in">
+                        <div id="collapseOne" class="panel-collapse collapse">
                             <div class="info-block">
                                 To add database-specific environment variables, type <b>database:</b> in the Value textbox.
                             </div>

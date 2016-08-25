@@ -1630,18 +1630,18 @@ public class ApplicationDAO {
      * @return application count
      * @throws AppCloudException
      */
-    public int getApplicationCount(Connection dbConnection, int tenantId, String cloudType) throws AppCloudException {
+    public int getRunningApplicationVersionCount(Connection dbConnection, int tenantId, String cloudType) throws AppCloudException {
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         int appCount = 0;
         try {
-            preparedStatement = dbConnection.prepareStatement(SQLQueryConstants.GET_TENANT_APPLICATION_COUNT);
+            preparedStatement = dbConnection.prepareStatement(SQLQueryConstants.GET_TENANT_RUNNING_CONTAINER_COUNT);
             preparedStatement.setInt(1, tenantId);
             preparedStatement.setString(2, cloudType);
             resultSet = preparedStatement.executeQuery();
             dbConnection.commit();
             if (resultSet.next()) {
-                appCount = resultSet.getInt(1);
+                appCount = resultSet.getInt("ACTIVE_CONTAINERS_COUNT");
             }
         } catch (SQLException e) {
             String msg =

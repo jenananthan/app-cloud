@@ -120,7 +120,7 @@
             ssoRelyingParty.setSessionAuthenticated(sessionId, samlResponse);
             var userName = ssoRelyingParty.getLoggedInUser(sessionId);
             var modManager = jagg.module("manager");
-            var permission = modManager.getPropertyValue(LOGIN_PERMISSION);
+            var permission = modManager.getPropertyValue(jagg.findSelectedCloud(request.getRequestURL()) + LOGIN_PERMISSION);
             var isUserAuthorized = modManager.checkAuthorizationForUser(userName, permission);
             if(isUserAuthorized){
                 jagg.setUser(userName);

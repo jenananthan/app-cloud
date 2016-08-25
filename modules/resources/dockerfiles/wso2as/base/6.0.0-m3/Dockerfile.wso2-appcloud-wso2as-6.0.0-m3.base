@@ -1,0 +1,61 @@
+# ------------------------------------------------------------------------
+#
+# Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+#   WSO2 Inc. licenses this file to you under the Apache License,
+#   Version 2.0 (the "License"); you may not use this file except
+#   in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing,
+#   software distributed under the License is distributed on an
+#   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#   KIND, either express or implied.  See the License for the
+#   specific language governing permissions and limitations
+#   under the License.
+#
+# ------------------------------------------------------------------------
+
+FROM anapsix/alpine-java:8_server-jre_unlimited
+
+ENV WSO2_AS_VERSION 6.0.0-m3
+#ENV CATALINA_HOME /opt/tomcat
+ENV INSTALL_PATH /home/wso2user/
+#ENV PATH $PATH:$CATALINA_HOME/bin
+ENV ADMIN_PASS ""
+ENV CERT_PASS ""
+ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:MaxMetaspaceSize=256m"
+
+# Add the startup script
+ADD init.sh /init.sh
+ADD wso2as-${WSO2_AS_VERSION}.zip /wso2as-${WSO2_AS_VERSION}.zip
+ADD wso2carbon.jks /wso2carbon.jks
+
+# line 2-3. Add WSO2 user
+# line 4-9. Get and unpack Tomcat
+# line 10. Make a copy of the webapps folder, in case an empty or non-existent host
+# folder is specified for the (webapps) volume.
+RUN apk update && apk add pwgen wget openjdk8 && \
+    addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/jre/
+
+USER wso2user
+
+
+RUN cp /wso2as-${WSO2_AS_VERSION}.zip $INSTALL_PATH/catalina.zip && \
+    unzip $INSTALL_PATH/catalina.zip -d $INSTALL_PATH/ && \
+    rm $INSTALL_PATH/catalina.zip && \
+    rm -rf $INSTALL_PATH/wso2as-${WSO2_AS_VERSION}/webapps/examples
+
+COPY catalina.properties $INSTALL_PATH/wso2as-${WSO2_AS_VERSION}/conf/
+COPY wso2as-web.xml $INSTALL_PATH/wso2as-${WSO2_AS_VERSION}/conf/wso2/
+COPY lib/ $INSTALL_PATH/wso2as-${WSO2_AS_VERSION}/lib/
+COPY client-truststore.jks $INSTALL_PATH/wso2as-${WSO2_AS_VERSION}/conf/wso2/
+
+EXPOSE 8080 8443
+USER wso2user
+CMD ["bash", "-c", "source /init.sh"]
+

@@ -161,9 +161,9 @@ var log = new Log();
         // checking whether an application with same name and same version, already exists or not
         var versionHashId = applicationModule.getVersionHashId(applicationName, applicationRevision);
         if (applicationModule.isAplicationVersionExist(versionHashId)) {
-            logMessage = "Application with same name and version already exists!";
+            logMessage = "Bad request : Application with same name and version already exists!";
             log.warn(logMessage);
-            response.status = 200;
+            response.status = 400;
             response.content = logMessage;
             return;
         } else {
@@ -196,7 +196,7 @@ var log = new Log();
             } else {
                 //Since the user is trying to create a new application we check if the existing application count is
                 //less than the maximum amount of applications that can be created
-                var applicationCount = applicationModule.getApplicationCount();
+                var applicationCount = applicationModule.getRunningApplicationVersionCount();
                 var maxAppCount = applicationModule.getMaxInstanceCount();
                 if (applicationCount < maxAppCount) {
                     isAppCountLowerThanMax = true;
@@ -331,10 +331,6 @@ var log = new Log();
 
         // redeploy application from kubernetes
         applicationModule.redeployApplication(applicationName, applicationRevision, versionKey, applicationType);
-        // stop other versions of the application
-        if (versions.length > 1) {
-            applicationModule.stopOtherVersions(applicationHashId, applicationRevision);
-        }
         print(stringify(versions));
 
     } else if (action == "getApplicationCreationEvents") {
@@ -632,16 +628,10 @@ function validationApplicationRevision(field, value) {
     if (validateRequired(field, value)) {
         return true;
     }
-    if (!isNaN(value)) {
+    var patternNonAlphaNum = /[^a-zA-Z\d\-\_.]/g;
+    if (patternNonAlphaNum.test(value)) {
         response.status = 400;
-        response.content = "Bad request : Invalid version number - Provide version number in format major.minor.patch";
-        return true;
-    }
-
-    var patternNonAlphaNum = /^(?:(\d{1,2})\.)?(?:(\d{1,2})\.)?(\*|\d{1,2})$/g;
-    if (!patternNonAlphaNum.test(value)) {
-        response.status = 400;
-        response.content = "Bad request : Invalid version number - Provide version number in format major.minor.patch";
+        response.content = "Bad request : Application version has invalid characters. Valid characters are [a-z, A-Z, 0-9, _, ., -]";
         return true;
     }
     return false;

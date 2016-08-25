@@ -61,7 +61,7 @@ function login(userName, password, requestURL) {
         context.getThreadLocalCarbonContext().setUsername(userName);
 		var result = server.Server.prototype.authenticate(userName,password);
 		if(result === true){
-		    var permission = modManager.getPropertyValue(LOGIN_PERMISSION);
+		    var permission = modManager.getPropertyValue(jagg.findSelectedCloud(request.getRequestURL()) + LOGIN_PERMISSION);
             var isUserAuthorized = modManager.checkAuthorizationForUser(userName, permission);
             if (isUserAuthorized){
                 jagg.setUser(userName);

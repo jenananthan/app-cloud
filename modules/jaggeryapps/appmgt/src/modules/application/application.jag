@@ -55,22 +55,11 @@ var addApplication = function (applicationName, versionName, applicationDescript
                                runtimePropertiesArray, tagArray, appIcon, uploadedFileName, isNewVersion, conSpecMemory,
                                conSpecCpu, artifactUrl, appCreationMethod, oldHashId, applicationContext, setDefaultVersion) {
 
-    log.info("Started creating App => Name:" + applicationName +
-    " Version:" + versionName +
-    " Description:" + applicationDescription +
-    " RuntimeId:" + runtimeId +
-    " AppType:" + appTypeName +
-    " Runtime Properties:" + JSON.stringify(runtimePropertiesArray) +
-    " Tags:" + JSON.stringify(tagArray) +
-    " App Icon:" + JSON.stringify(appIcon) +
-    " Uploaded FileName:" + uploadedFileName +
-    " New Version:" + isNewVersion +
-    " Allocated Memory:" + conSpecMemory +
-    " Allocated CPU:" + conSpecCpu +
-    " Artifact Url:" + artifactUrl +
-    " App Creation Method:" + appCreationMethod +
-    " Previous HashId:" + oldHashId +
-    " Context:" + applicationContext +
+    log.info("Started creating App => Name:" + applicationName + " Version:" + versionName + " Description:" + applicationDescription +
+    " RuntimeId:" + runtimeId + " AppType:" + appTypeName + " Runtime Properties:" + JSON.stringify(runtimePropertiesArray) +
+    " Tags:" + JSON.stringify(tagArray) + " Uploaded FileName:" + uploadedFileName + " New Version:" + isNewVersion +
+    " Allocated Memory:" + conSpecMemory + " Allocated CPU:" + conSpecCpu + " Artifact Url:" + artifactUrl +
+    " App Creation Method:" + appCreationMethod + " Previous HashId:" + oldHashId + " Context:" + applicationContext +
     " DefaultVersion:" + setDefaultVersion);
 
     var tenantId = modManager.getTenantId();
@@ -81,7 +70,6 @@ var addApplication = function (applicationName, versionName, applicationDescript
     }
     if(isNewVersion == 'true'){
         createAppVersionInDataBase(versionName, runtimeId, runtimePropertiesArray, tagArray, applicationHashId, versionHashId, conSpecMemory, conSpecCpu);
-        stopOtherVersions(applicationHashId, versionName);
     }else{
         createAppInDataBase(applicationName, versionName, applicationDescription, replicas, runtimeId, appTypeName,
                 runtimePropertiesArray, tagArray, appIcon, applicationHashId, versionHashId, conSpecMemory, conSpecCpu);
@@ -99,6 +87,9 @@ var addApplication = function (applicationName, versionName, applicationDescript
     }
 
     if(oldHashId){
+        if (log.isDebugEnabled()) {
+             log.debug("User has changed the name after uploading the artifact:" + uploadedFileName);
+        }
         renameDirectory(oldHashId, versionHashId, uploadedFileName);
     }
     var absFileUploadedPath =  createDockerFile(applicationName, versionName, runtimeId, uploadedFileName,
@@ -106,10 +97,8 @@ var addApplication = function (applicationName, versionName, applicationDescript
     var buildDockerImageStatus = buildDockerImage(applicationName, versionName, runtimeId, absFileUploadedPath, applicationRuntime, tagName, versionHashId, dockerClient);
     if (buildDockerImageStatus) {
         pushDockerImage(applicationName, versionName, applicationRuntime, tagName, versionHashId, dockerClient);
-
-    triggerKubernetesDeployment(runtimeProperties, applicationRuntime, tagName, applicationName, versionName, appTypeName, runtimeId, replicas, versionHashId, conSpecMemory, conSpecCpu);
-    putSelectedRevisionToSession(applicationHashId, versionName);
-
+        triggerKubernetesDeployment(runtimeProperties, applicationRuntime, tagName, applicationName, versionName, appTypeName, runtimeId, replicas, versionHashId, conSpecMemory, conSpecCpu);
+        putSelectedRevisionToSession(applicationHashId, versionName);
     }
 
     if (isNewVersion == 'true') {
@@ -123,33 +112,13 @@ var addApplication = function (applicationName, versionName, applicationDescript
     }
 };
 
-var stopOtherVersions = function(applicationHashId, selectedRevision) {
-    var application = getApplication(applicationHashId);
-    var applicationVersions = application.versions;
-    var keys = Object.keys(applicationVersions);
-
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        //Stop other versions
-        if (key != selectedRevision) {
-            var versionDetails = applicationVersions[key];
-            var otherVersionHashId = versionDetails.hashId;
-            var applicationStatus = getApplicationRevisionStatus(applicationHashId, key);
-
-            if (applicationStatus != "stopped") {
-                deleteApplicationFromKubernetes(otherVersionHashId);
-                updateApplicationStatus(otherVersionHashId, APPLICATION_STOPPED);
-                deleteEventsOfAppVersions(otherVersionHashId);
-            }
-        }
-    }
-}
-
 var triggerKubernetesDeployment = function(runtimeProperties, applicationRuntime, tagName, applicationName, versionName, appTypeName, runtimeId, replicas, versionHashId, conSpecMemory, conSpecCpu){
     var appHostURL = constructAppLaunchURL(applicationName, versionName);
     var containers = getContainers(modManager.getPropertyValue(PROPERTY_DOCKER_REGISTRY_URL), applicationRuntime.getImageName(), tagName, versionHashId ,versionHashId, runtimeProperties, runtimeId, appHostURL);
     var deploymentConfig = getDeploymentConfig(containers, versionHashId, replicas);
-
+    if (log.isDebugEnabled()) {
+        log.debug("Triggering Kubernetes to deploy version:" + versionHashId);
+    }
     deployApplication(applicationName, versionName, appTypeName, deploymentConfig, false, versionHashId, "new", conSpecMemory, conSpecCpu);
 }
 
@@ -158,13 +127,14 @@ var pushDockerImage = function (applicationName, versionName, applicationRuntime
     //Adding docker image push pending event
     var msg = "Docker image push successfully triggered";
     addEvent(DOCKER_REGISTRY_PUSH, EVENT_PENDING, msg, versionHashId);
-
     try {
         dockerClient.pushDockerImage(modManager.getPropertyValue(PROPERTY_DOCKER_REGISTRY_URL),applicationRuntime.getImageName(), tagName);
     } catch (e) {
         var msg = "Error uploading docker image to remote registry";
         addEvent(DOCKER_REGISTRY_PUSH, EVENT_FAILED, msg, versionHashId);
-
+        if (log.isDebugEnabled()) {
+            log.debug("Start pushing docker image for version:" + versionHashId);
+        }
         try {
             ApplicationManager.updateVersionStatus(versionHashId, APPLICATION_ERROR);
         } catch(e1){
@@ -181,7 +151,6 @@ var pushDockerImage = function (applicationName, versionName, applicationRuntime
         deleteVersion(versionHashId, true, false);
         throw e;
     }
-
     //Adding docker push success event
     var msg = "Docker image push successfully completed";
     addEvent(DOCKER_REGISTRY_PUSH, EVENT_SUCCEEDED, msg, versionHashId);
@@ -192,7 +161,9 @@ var buildDockerImage = function (applicationName, versionName, runtimeId, absFil
     //Adding docker build pending event
     var msg = "Docker image build successfully triggered in appcloud";
     addEvent(DOCKER_IMAGE_BUILD, EVENT_PENDING, msg, versionHashId);
-
+    if (log.isDebugEnabled()) {
+        log.debug("Start building docker image for version:" + versionHashId);
+    }
     var applicationRuntime = ApplicationManager.getRuntimeById(runtimeId);
     var tenantDockerRegistryUrl = modManager.getPropertyValue(PROPERTY_DOCKER_REGISTRY_URL) + "/" + dockerRegTenantSpace;
     var tagName = applicationRuntime.getTag() +"-"+ versionHashId;
@@ -253,6 +224,9 @@ var createAppInDataBase = function(applicationName, versionName, applicationDesc
     var application = new Application();
     var version = new Version();
     try {
+        if (log.isDebugEnabled()) {
+            log.debug("Adding application:" + applicationName + " to database," + " applicationHashId:" + applicationHashId + ", versionHashId:" + versionHashId);
+        }
         application.setApplicationName(applicationName);
         application.setHashId(applicationHashId);
         application.setDescription(applicationDescription);
@@ -262,6 +236,9 @@ var createAppInDataBase = function(applicationName, versionName, applicationDesc
         var iconStream = null;
         var iconBlob = null;
         if (appIcon) {
+            if (log.isDebugEnabled()) {
+                log.debug("Application icon is uploaded by user");
+            }
             iconStream = Packages.org.apache.commons.io.IOUtils.toByteArray(appIcon.getStream().getStream());
             iconBlob = new Packages.javax.sql.rowset.serial.SerialBlob(iconStream);
             application.setIcon(iconBlob);
@@ -285,9 +262,10 @@ var createAppInDataBase = function(applicationName, versionName, applicationDesc
         application.setVersions(versionList);
         ApplicationManager.addApplication(application);
     } catch (e){
+        var msg = "Error while adding application : " + applicationName + " with version : "+ versionName + " to database";
         log.error(msg);
         log.error(e);
-        log.info("Application creation failed because initial application metadata persistence failed and roll back process" +
+        log.info("Application creation failed due to initial application metadata persistence failure and roll back process" +
                  " is started for application : "+applicationName+" with version : "+ versionName);
         //Not deleting the uploaded artifact, we need to handle the retry logic
         throw e;
@@ -298,18 +276,19 @@ var createAppInDataBase = function(applicationName, versionName, applicationDesc
 var createAppVersionInDataBase = function( versionName,   runtimeId, runtimePropertiesArray, tagArray, applicationHashId, versionHashId, conSpecMemory, conSpecCpu){
 	var version = new Version();
     try {
+        if (log.isDebugEnabled()) {
+            log.debug("Adding version:" + versionHashId + " to database");
+        }
         version.setVersionName(versionName);
         version.setRuntimeId(runtimeId);
         version.setStatus(APPLICATION_CREATED);
         version.setHashId(versionHashId);
         version.setConSpecCpu(conSpecCpu);
         version.setConSpecMemory(conSpecMemory);
-
         if(runtimePropertiesArray.length > 0) {
             var runtimePropertyList = generateRuntimePropsList(runtimePropertiesArray);
             version.setRuntimeProperties(runtimePropertyList);
         }
-
         if(tagArray.length > 0){
             var tagList = generateTagsList(tagArray);
             version.setTags(tagList);
@@ -328,17 +307,21 @@ var createAppVersionInDataBase = function( versionName,   runtimeId, runtimeProp
 
 var createDockerFile = function (applicationName, versionName, runtimeId, uploadedFileName, versionHashId, dockerClient,
                                  artifactUrl, hostName, appCreationMethod, runtimeProperties, conSpecMemory) {
-    var msg = "Docker file creation successfully triggered in appcloud";
+    var msg = "Docker file creation successfully triggered in AppCloud";
     addEvent(DOCKER_FILE_CREATE, EVENT_PENDING, msg, versionHashId);
+    if (log.isDebugEnabled()) {
+        log.debug("Start creating docker file for version:" + versionHashId);
+    }
     var absFileUploadedPath;
 
     try {
         var fileUploadPath = constructFileUploadPath(versionHashId);
         var absFileUploadedPath = modManager.getPropertyValue(PROPERTY_APPMGT_DEPLOYMENT_DIR_PATH) + fileUploadPath;
         var dockerFilePath = absFileUploadedPath + DOCKER_FILE_NAME;
-
+        if (log.isDebugEnabled()) {
+            log.debug("Docker file path for deployment: " + dockerFilePath);
+        }
         var dockerTemplateFilePath = modManager.getPropertyValue(PROPERTY_APPMGT_DEPLOYMENT_DIR_PATH) + "/" + "dockerfiles";
-
         var uploadArtifactTmpName;
         var checkFileExtZIP = isFileExtZIP(uploadedFileName);
         if (checkFileExtZIP && !artifactUrl) {
@@ -347,23 +330,18 @@ var createDockerFile = function (applicationName, versionName, runtimeId, upload
         } else {
             uploadArtifactTmpName = uploadedFileName;
         }
-
         var dockerFilePropertyMap = new java.util.HashMap();
         var artifactNameWithoutExtension = uploadArtifactTmpName.substring(0, uploadArtifactTmpName.lastIndexOf("."));
-
         dockerFilePropertyMap.put("ARTIFACT_NAME", uploadArtifactTmpName);
         dockerFilePropertyMap.put("ARTIFACT_DIR", artifactNameWithoutExtension);
         dockerFilePropertyMap.put("HOST_NAME", hostName);
         dockerFilePropertyMap.put("ARTIFACT_URL", artifactUrl);
         dockerFilePropertyMap.put("VAL_TOTAL_MEMORY", conSpecMemory);
         var appRuntimeProperties = getRuntimeProperties(runtimeProperties);
-
         dockerClient.createDockerFile(dockerFilePath, runtimeId, dockerTemplateFilePath, appCreationMethod, dockerFilePropertyMap, appRuntimeProperties);
-
     } catch(e){
         var msg = "Error while creating docker file";
         addEvent(DOCKER_FILE_CREATE, EVENT_FAILED, msg, versionHashId);
-
         try {
             ApplicationManager.updateVersionStatus(versionHashId, APPLICATION_ERROR);
         } catch(e1){
@@ -372,7 +350,6 @@ var createDockerFile = function (applicationName, versionName, runtimeId, upload
             log.error(e1);
             // not throwing the error, because it will hide the actual exception
         }
-
         log.error(msg);
         log.error(e);
         log.info("Application creation failed because docker file creation failed and roll back process" +
@@ -380,7 +357,6 @@ var createDockerFile = function (applicationName, versionName, runtimeId, upload
         deleteVersion(versionHashId, true, false);
         throw e;
     }
-
     //Adding docker file create success event
     var msg = "Docker file successfully created for application";
     addEvent(DOCKER_FILE_CREATE, EVENT_SUCCEEDED, msg, versionHashId);
@@ -419,13 +395,13 @@ var deployApplication = function(applicationName, versionName, appTypeName, depl
     //Adding deployment pending event
     var msg = "Application deployment successfully triggered in Kubernetes";
     addEvent(KUBE_DEPLOY, EVENT_PENDING, msg, versionHashId);
-
     //Creating basic deployment
     var applicationCtx = KubernetesProvisioningUtils.getApplicationContext(
             applicationName, versionName, appTypeName , modManager.getTenantId(), modManager.getTenantDomain(), versionHashId);
     var kubService = new KubernetesRuntime(applicationCtx, resourceQuotaLimit);
-
-    log.info("Deploying application: " + applicationName);
+    if (log.isDebugEnabled()) {
+        log.debug("Deploying application: " + applicationName);
+    }
     try{
         kubService.deployApplication(deploymentConfig);
         if(!isRedeploy) {
@@ -451,15 +427,13 @@ var deployApplication = function(applicationName, versionName, appTypeName, depl
     var msg = "Application deployment successful";
     addEvent(KUBE_DEPLOY, EVENT_SUCCEEDED, msg, versionHashId);
 
-    //======================================= checking pod status =================================================
+    //Checking pod status
     //Adding pod status pending event
     var podStatus = "Pending";
     addEvent(POD_STATUS, EVENT_PENDING, podStatus, versionHashId);
-
     if(status == "redeploy"){
         java.lang.Thread.sleep(50000);
     }
-
     counter = 0;
     var timeOut = modManager.getPropertyValue(POD_TIMEOUT);
     while(counter < timeOut){ // Waiting 1 minutes to gets pods up and running
@@ -526,10 +500,13 @@ var redeployVersion = function(applicationName, versionName, versionHashId, appT
     if (isDeleted) {
         updateApplicationStatus(versionHashId, APPLICATION_STOPPED);
         msg = "Successfully completed stopping container";
-        addEvent(STOP_CONTAINERS, EVENT_SUCCEEDED, msg, versionHashId);
         redeployApplication(applicationName, versionName, versionHashId, appTypeName);
+        addEvent(STOP_CONTAINERS, EVENT_SUCCEEDED, msg, versionHashId);
         return true;
     } else {
+        if (log.isDebugEnabled()) {
+            log.debug("Stopping container failed for version:" + versionHashId);
+        }
         msg = "Stopping container failed ";
         addEvent(STOP_CONTAINERS, EVENT_FAILED, msg, versionHashId);
         return false;
@@ -539,13 +516,17 @@ var redeployVersion = function(applicationName, versionName, versionHashId, appT
 var deleteEventsOfAppVersions = function(versionHashId){
     var eventsManager = new EventsManager();
     eventsManager.deleteAllEventsofAppVersion(versionHashId);
+    if (log.isDebugEnabled()) {
+        log.debug("Deleting events for version:" + versionHashId);
+    }
 }
 
 var redeployApplication = function(applicationName, versionName, versionHashId, appTypeName){
+    if (log.isDebugEnabled()) {
+        log.debug("Redeployment started for version:" + versionHashId);
+    }
     var deploymentConfig = buildDeploymentConfigFromDB(versionHashId, applicationName, versionName);
-
     deployApplication(applicationName, versionName, appTypeName, deploymentConfig, true, versionHashId, "redeploy");
-
     if (getDefaultVersion(applicationName) == versionName) {
         redeployMappedDomain(applicationName, versionName);
     }
@@ -555,7 +536,6 @@ var persistDeploymentConfig = function(deploymentConfig, versionHashId){
     var containerList = deploymentConfig.getContainers();
     var ctr = containerList.get(0);
     var serviceProxies = ctr.getServiceProxies();
-
     var deployment = new Deployment();
     deployment.setDeploymentName(deploymentConfig.getDeploymentName());
     log.info("Deployment name:" + deploymentConfig.getDeploymentName());
@@ -918,7 +898,7 @@ function changeApplicationIcon(applicationHashId, appIcon){
         ApplicationManager.updateApplicationIcon(applicationHashId, inputStream);
     } else {
         log.error("Provided app icon is Empty for application : "+applicationName);
-        throw "Provided app icon is Empty"
+        throw "Provided app icon is Empty";
     }
 }
 
@@ -1410,10 +1390,10 @@ var constructFileUploadPath = function (versionHashId) {
     return fileUploadPath;
 };
 
-var getApplicationCount = function(){
+var getRunningApplicationVersionCount = function(){
     try{
         var tenantId = modManager.getTenantId();
-        var applicationCount = ApplicationManager.getApplicationCount(jagg.getSelectedCloud());
+        var applicationCount = ApplicationManager.getRunningApplicationVersionCount(jagg.getSelectedCloud());
         return applicationCount;
     }catch(e){
         log.error("Error while getting application count from the database");

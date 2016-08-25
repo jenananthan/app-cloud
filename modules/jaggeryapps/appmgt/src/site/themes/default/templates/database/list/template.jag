@@ -85,7 +85,7 @@ var isSSRunning = outputs.isSSRunning;
                             <th>Database URL</th>
                             <th>Type</th>
                             <th>Attached Users</th>
-                            <th>New Users</th>
+                            <th>All Users</th>
                             <th>Delete</th>
                         </tr>
                         </thead>

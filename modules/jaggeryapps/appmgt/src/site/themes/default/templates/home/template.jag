@@ -27,6 +27,11 @@ jagg.template("home", function(inputs, outputs, jagg) {
     var conSpecCpu = outputs.conSpecCpu;
     var conSpecMemory = outputs.conSpecMemory;
     var versions = application.versions;
+    var keyArray = Object.keys(versions);
+    var versionArray = []
+    for (var x = 0; x < keyArray.length; x++) {
+        versionArray.push(versions[keyArray[x]].versionName);
+    }
     var selectedApplicationRevision = versions[selectedRevision];
     var revisions = outputs.revision;
     var applicationName = application.applicationName;
@@ -37,6 +42,9 @@ jagg.template("home", function(inputs, outputs, jagg) {
     var encodedLabels = encodeURIComponent(stringify(selectedApplicationRevision.tags), "UTF-8");
     var encodedEnvs = encodeURIComponent(stringify(selectedApplicationRevision.runtimeProperties), "UTF-8");
     var defaultAppLaunchURL = selectedApplicationRevision.deploymentURL;
+    var applicationCount = outputs.applicationCount;
+    var maxApplications = outputs.maxAppCount;
+    var cloudSpecificApplicationRepresentation = outputs.cloudSpecificApplicationRepresentation;
     if(application.defaultVersion == selectedRevision) {
         if (application.customURL != null) {
             defaultAppLaunchURL = application.customURL;
@@ -47,7 +55,6 @@ jagg.template("home", function(inputs, outputs, jagg) {
 %>
 
 <script>
-
     var applicationName = "<%=applicationName%>";
     var applicationKey = "<%=applicationKey%>";
     var conSpecCpu = "<%=conSpecCpu%>";
@@ -65,6 +72,10 @@ jagg.template("home", function(inputs, outputs, jagg) {
     var APPLICATION_INACTIVE = "<%=APPLICATION_INACTIVE%>";
     var pageTitle = "<%=outputs.pageTitle%>";
     var applicationType = "<%=application.applicationType%>";
+    var applicationCount = <%=applicationCount%>;
+    var maxApplications = <%=maxApplications%>;
+    var cloudSpecificApplicationRepresentation = "<%=cloudSpecificApplicationRepresentation%>";
+    var versionArray = jQuery.parseJSON('<%=versionArray%>');
 </script>
 
     <div class="right-pane">
@@ -78,7 +89,7 @@ jagg.template("home", function(inputs, outputs, jagg) {
         </a>
     </div><!-- EOF App factory menu actionbar-->
 
-    <div class="container-fluid app-content-section">
+    <div class="container-fluid app-content-section" id="outerContainer">
 
         <div class="row">
           <div class="col-xs-12 col-md-12 col-lg-12 app-preview">
@@ -122,11 +133,9 @@ jagg.template("home", function(inputs, outputs, jagg) {
                               </button>
                               <ul id="appVersionList" class="dropdown-menu" >
                               <%
-                                var versions = application.versions;
-                                var keyArray = Object.keys(versions);
-                                for (var x = 0; x < keyArray.length; x++) {
+                                for (var x = 0; x < versionArray.length; x++) {
                               %>
-                                  <li ><a href="#"><%=versions[keyArray[x]].versionName%></a></li>
+                                  <li ><a href="#"><%=versionArray[x]%></a></li>
                               <%
                               }
                               %>
@@ -233,7 +242,7 @@ jagg.template("home", function(inputs, outputs, jagg) {
                             </div>
                         </div>
                         <div class="col-xs-12 col-md-3 col-lg-3" data-toggle="tooltip" title="HTTP Monitoring Dashboard is not supported in this release. It will be available soon!">
-                            <a class="block-anch" href="#" onclick="return false;" target="_blank">
+                            <!--<a class="block-anch" href="#" onclick="return false;" target="_blank">-->
                                 <div class="block-monitoring wrapper">
                                     <div class="ribbon-wrapper"><div class="ribbon">Available Soon</div></div>
                                     <h3>HTTP Monitoring Dashboard</h3>
@@ -242,7 +251,7 @@ jagg.template("home", function(inputs, outputs, jagg) {
                                     </div>
                                 <div class="clearfix"></div>
                                 </div>
-                            </a>
+                            <!--</a>-->
                         </div>
                       <div class="clearfix"></div>
                     </div>
@@ -311,20 +320,6 @@ jagg.template("home", function(inputs, outputs, jagg) {
        </div><!-- /.modal-content -->
      </div><!-- /.modal -->
 <script>
-
-    function generateNextPossibleVersion(revisionsSet){
-        var revArry = [];
-        for (var x in revisionsSet){
-            var rev = x.split(".")[0];
-            revArry.push(rev);
-        }
-        revArry.sort(function(a, b){return a-b});
-        var x = parseInt(revArry.pop()) + 1;
-        var nextVersion = x + '.0.0';
-
-        return nextVersion;
-    }
-
 
   // stop application
     function redeployApplication(){
@@ -398,27 +393,31 @@ jagg.template("home", function(inputs, outputs, jagg) {
 
     // redeploy application
     function startApplication(){
-        executeAsync(drawProgressWindow("Restarting..."));
-        jagg.post("../blocks/application/application.jag", {
-            action: "startApplication",
-            applicationName: applicationName,
-            applicationRevision: selectedRevision,
-            versionKey: selectedApplicationRevision.hashId,
-            conSpecCpu: conSpecCpu,
-            conSpecMemory: conSpecMemory
+        if (applicationCount >= maxApplications) {
+            $('#outerContainer').empty();
+            $('#outerContainer').html('<div class="container-fluid"><div class="row row-centered">' +
+                '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
+                '<h3>You cannot have more than ' + maxApplications + " running " + cloudSpecificApplicationRepresentation.toLowerCase() + ' versions on a free subscription. ' +
+                'Please stop an existing ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' version to continue.</h3></div></div></div></div>');
+        } else {
+            executeAsync(drawProgressWindow("Restarting..."));
+            jagg.post("../blocks/application/application.jag", {
+                action: "startApplication",
+                applicationName: applicationName,
+                applicationRevision: selectedRevision,
+                versionKey: selectedApplicationRevision.hashId,
+                conSpecCpu: conSpecCpu,
+                conSpecMemory: conSpecMemory
 
-        }, function(result) {
-            var versions = jQuery.parseJSON(result);
-            //check if application has more than one version
-            if (versions.length > 1) {
+            }, function(result) {
+                //check if application has more than one version
                 jagg.message({
-                    content: "You can start only one version of an application at a time on a free subscription." +
-                        " Other versions were stopped automatically.",
+                    content: "New version started successfully",
                     type: 'info',
                     timeout: 3500
                 });
-            }
-        });
+            });
+        }
     }
 
     function drawProgressWindow(heading){

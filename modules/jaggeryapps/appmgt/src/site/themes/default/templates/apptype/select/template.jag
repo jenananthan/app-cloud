@@ -21,8 +21,7 @@ include("/jagg/jagg.jag");
 
 jagg.template("apptype/select", function(inputs, outputs, jagg) {
     var appTypes = outputs.appTypes;
-    var docLink = outputs.docLink;
-    %>
+     %>
 
     <div class="action-bar">
         <a href="/appmgt/site/pages/index.jag" class="btn-action">
@@ -42,7 +41,8 @@ jagg.template("apptype/select", function(inputs, outputs, jagg) {
                     <div class="cloud-app-type <%=appTypes[x].cssProperties.color%> cloud-app-type-max" id="<%=x + 1%>"
                                 data-description="<%=appTypes[x].description%>"
                                 data-appname="<%=appTypes[x].cssProperties.displayName%>"
-                                app-type="<%=appTypes[x].name%>">
+                                app-type="<%=appTypes[x].name%>"
+                                doc-url="<%=appTypes[x].docUrl%>">
                                 <i class="fw <%=appTypes[x].cssProperties.icon%> fw-5x"></i>
                                 <div class="type-name" ><%=appTypes[x].cssProperties.displayName%></div>
                     </div>
@@ -64,7 +64,7 @@ jagg.template("apptype/select", function(inputs, outputs, jagg) {
                   <div class="app-description">
                   </div>
                   <div class="button-bar">
-                     <a href="<%=docLink%>" class="cu-btn cu-btn-md cu-btn-gray" target="_blank"><i class="fa fa-book"></i> Documentation</a>
+                     <a id="docUrl" href="" class="cu-btn cu-btn-md cu-btn-gray" target="_blank"><i class="fa fa-book"></i> Documentation</a>
                      <!--a href="#" class="cu-btn cu-btn-md cu-btn-gray"><i class="fa fa-video-camera"></i> Video Guide</a-->
                   </div>
                </div>
@@ -100,6 +100,7 @@ jagg.template("apptype/select", function(inputs, outputs, jagg) {
                     appDescription = $(this).attr('data-description'),
                     appName = $(this).attr('data-appname'),
                     appType = $(this).attr('app-type'),
+                    docUrl = $(this).attr('doc-url'),
                     dataCount = parseInt($('.listing').attr('data-count'));
 
         var appCreationPage = '<%=jagg.getAbsoluteUrl("/site/pages/application.jag")%>?appTypeName=' + appType;
@@ -107,6 +108,7 @@ jagg.template("apptype/select", function(inputs, outputs, jagg) {
         $('.app-type-info-template').find('.data-appname').html(appName);
         $('.app-type-info-template').find('.app-description').html(appDescription);
         $('.app-type-info-template').find('#continueButton').attr("href", appCreationPage);
+        $('.app-type-info-template').find('#docUrl').attr("href", docUrl);
         var appendHtml =$('.app-type-info-template').html();
         //The tile count adjust according to the resolution to keep responsiveness
         if(width >= 1170){

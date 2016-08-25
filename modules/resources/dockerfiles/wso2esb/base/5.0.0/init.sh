@@ -35,13 +35,18 @@ DEFAULT_PROFILE_BUNDLES_INFO_FILE="$CARBON_HOME_PATH/repository/components/defau
 rm -rf $CARBON_HOME_PATH/repository/deployment/server/axis2services/*
 rm -rf $CARBON_HOME_PATH/repository/deployment/server/webapps/*
 
-#Calculate max heap size and the perm size for Java Opts
-#Check whether TOTAL_MEMORY env variable defined or and not empty
-if [[ $TOTAL_MEMORY && ${TOTAL_MEMORY-_} ]]; then
-    let MAX_HEAP_SIZE=$TOTAL_MEMORY/512*256
-    let PERM_SIZE=$TOTAL_MEMORY/512*64
-    JAVA_OPTS="-Xms128m -Xmx"$MAX_HEAP_SIZE"m -XX:PermSize="$PERM_SIZE"m"
-    export JAVA_OPTS=$JAVA_OPTS
+#Check whether JAVA_OPTS env variable is defined and is not empty
+if [[ $JAVA_OPTS && ${JAVA_OPTS-_} ]]; then
+	export JAVA_OPTS=$JAVA_OPTS
+else
+    #Calculate max heap size and the perm size for Java Opts
+    #Check whether TOTAL_MEMORY env variable defined or and not empty
+	if [[ $TOTAL_MEMORY && ${TOTAL_MEMORY-_} ]]; then
+	    let MAX_HEAP_SIZE=$TOTAL_MEMORY/256*128
+	    let MAX_META_SPACE_SIZE=$TOTAL_MEMORY/256*128
+	    JAVA_OPTS="-Xms128m -Xmx"$MAX_HEAP_SIZE"m -XX:MaxMetaspaceSize="$MAX_META_SPACE_SIZE"m"
+	    export JAVA_OPTS=$JAVA_OPTS
+	fi
 fi
 
 $CARBON_HOME_PATH/bin/wso2server.sh

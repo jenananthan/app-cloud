@@ -37,8 +37,10 @@ ADD wso2carbon.jks /wso2carbon.jks
 # line 4-9. Get and unpack Tomcat
 # line 10. Make a copy of the webapps folder, in case an empty or non-existent host
 # folder is specified for the (webapps) volume.
-RUN apk update && apk add pwgen wget && \
+RUN apk update && apk add pwgen wget openjdk8 && \
     addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/jre/
 
 USER wso2user
 

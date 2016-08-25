@@ -50,6 +50,10 @@ jagg.block("home", {
         var dashboardUrl = managerModule.getPropertyValue(DASHBOARD_BASE_URL);
 
         var pageTitle = managerModule.getCloudTypeProperties().pageTitle;
+        var maxAppCount = applicationModule.getMaxInstanceCount();
+        var applicationCount = applicationModule.getRunningApplicationVersionCount();
+        var cloudSpecificApplicationRepresentation = jagg.module("manager").getCloudTypeProperties().cloudSpecificApplicationRepresentation;
+
         return {
             "application" : application,
             "selectedRevision" : selectedRevision,
@@ -57,7 +61,10 @@ jagg.block("home", {
             "conSpecMemory" : conSpecMemory,
             "restartCounts" : restartCounts,
             "pageTitle" : pageTitle,
-            "dashboardUrl" : dashboardUrl
+            "dashboardUrl" : dashboardUrl,
+            "applicationCount" : applicationCount,
+            "maxAppCount" : maxAppCount,
+            "cloudSpecificApplicationRepresentation" : cloudSpecificApplicationRepresentation,
         };
     }
 

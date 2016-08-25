@@ -100,6 +100,9 @@ function as_setup(){
     mkdir -p $1/repository/deployment/server/jaggeryapps/appmgt/
     unzip -q $APP_CLOUD_SRC_HOME/modules/jaggeryapps/appmgt/target/appmgt-3.0.0-SNAPSHOT.zip -d $1/repository/deployment/server/jaggeryapps/appmgt/
     sed -e "s@AS_HOME@$1@g" $APP_CLOUD_SRC_HOME/modules/setup-scripts/jaggery/site.json > $1/repository/deployment/server/jaggeryapps/appmgt/site/conf/site.json
+
+    # copy axis2service to dockerfiles/wso2dataservice
+    cp $APP_CLOUD_SRC_HOME/modules/components/org.wso2.appcloud.dss.integration/target/org.wso2.appcloud.dss.integration-3.0.0-SNAPSHOT.aar $APP_CLOUD_SRC_HOME/modules/resources/dockerfile/wso2dataservice/base/3.5.0/
     cp -R $APP_CLOUD_SRC_HOME/modules/resources/dockerfiles $1/repository/deployment/server/jaggeryapps/appmgt/
 
     cp -r $APP_CLOUD_SRC_HOME/modules/setup-scripts/jaggery/modules/* $1/modules/

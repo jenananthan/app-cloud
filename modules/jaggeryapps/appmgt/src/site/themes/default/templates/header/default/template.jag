@@ -128,10 +128,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <%
                             } else {
                         %>
-                        <a class="cloud-block" href="<%=integrationCloudURL%>" target="_blank">
+                        <!--a class="cloud-block" href="<%=integrationCloudURL%>" target="_blank">
                             <i class="fw fw-3x fw-service"></i>
                             <div class="cloud-name"> Integration Cloud</div>
-                        </a>
+                        </a-->
                         <%
                             }
                         %>

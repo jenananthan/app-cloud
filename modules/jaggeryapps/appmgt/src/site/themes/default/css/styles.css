@@ -610,6 +610,11 @@ a.btn-action {
 .forms textarea {
     border-radius: 0px
 }
+
+#application-details .checkbox {
+    margin-top: 30px;
+}
+
 .btn-file {
     position: relative;
     overflow: hidden;
@@ -749,6 +754,7 @@ a.btn-action {
     background-color: #383d44;
     top: 0;
     color:#fff;
+    text-decoration:none;
 }
 .app-thumb span {
     padding: 7px;
@@ -1125,7 +1131,7 @@ a.btn-action {
 .block-con-spec {
     margin-top: 1em;
     padding: 18px;
-    background-color: #4abbd9;
+    background-color: #3d5156;
     width: 100%;
 
 }

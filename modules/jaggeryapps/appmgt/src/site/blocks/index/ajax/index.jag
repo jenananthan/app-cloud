@@ -41,6 +41,16 @@
              var msg = "Error while getting tagged application list";
              log.error(e);
          }
+     } else if (action == "getApplicationList") {
+
+         var applicationModule = jagg.module("application");
+         try {
+             var applications = applicationModule.getAllApplications();
+             print(applications);
+         } catch (e) {
+             var msg = "Error while getting application list";
+             log.error(e);
+         }
      } else {
          log.error("No action specified");
      }
