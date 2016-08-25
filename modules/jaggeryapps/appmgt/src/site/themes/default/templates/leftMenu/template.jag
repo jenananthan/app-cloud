@@ -27,7 +27,14 @@ jagg.template("leftMenu", function (inputs, outputs, jagg) {
     var pageName = outputs.pageName;
     var cloudTitle = outputs.cloudTitle;
 
-%>
+    // converting application name to camel case ; to display in breadcumb
+    var camelizedAppName = applicationName.split(' ').map(function(item){
+        item = item.toLowerCase();
+        return item.substring(0,1).toUpperCase() + item.substring(1);
+    }).join(' ');
+
+
+    %>
 
  <div class="navbar navbar-secondary">
     <div class="container-fliud">
@@ -37,7 +44,7 @@ jagg.template("leftMenu", function (inputs, outputs, jagg) {
             </div>
             <div class="col-md-8 breadcrumb-secondary">
                 <a href="/appmgt/site/pages/index.jag"><i class="fa fa-cubes visible-xs visible-lg"></i></a>
-                <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a> / <a href="/appmgt/site/pages/home.jag?applicationKey=<%=applicationKey%>"> <%=applicationName%></a> / <%=pageName%></span>
+                <span class="hidden-xs"><a href="/appmgt/site/pages/index.jag"><%=cloudTitle%></a> / <a href="/appmgt/site/pages/home.jag?applicationKey=<%=applicationKey%>"> <%=camelizedAppName%></a> / <%=pageName%></span>
             </div>
         </div>
     </div>

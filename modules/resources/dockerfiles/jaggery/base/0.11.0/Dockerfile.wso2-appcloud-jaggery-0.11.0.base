@@ -18,37 +18,31 @@
 #
 # ------------------------------------------------------------------------
 
-FROM java:7-jre
+FROM anapsix/alpine-java:8_server-jre_unlimited
 
-ENV DEBIAN_FRONTEND noninteractive
 ENV WSO2AS_ZIP wso2as-5.3.0.zip
-ENV INSTALL_PATH /opt/
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-ENV JAVA_OPTS="-Xms128m -Xmx300m -XX:PermSize=128m"
+ENV INSTALL_PATH /home/wso2user/
+ENV JAVA_OPTS="-Xms128m -Xmx300m -XX:MaxMetaspaceSize=128m"
 ENV ADMIN_PASS ""
-
 ENV WSO2_AS_VERSION 5.3.0
 
-RUN apt-get update && \
-    apt-get install -y pwgen git wget
+RUN apk update && \
+    apk add --no-cache pwgen git wget && \
+    addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+USER wso2user
 
 # Add the startup script
 ADD init.sh /init.sh
-RUN chmod +x /init.sh
 
 COPY $WSO2AS_ZIP $INSTALL_PATH
-RUN cd /opt && unzip $WSO2AS_ZIP
+RUN cd /home/wso2user/ && unzip $INSTALL_PATH/$WSO2AS_ZIP
 
-COPY patches/ /opt/wso2as-5.3.0/repository/components/patches/
-COPY modules/ /opt/wso2as-5.3.0/modules/
-COPY lib/ /opt/wso2as-5.3.0/repository/components/lib/
+COPY patches/ $INSTALL_PATH/wso2as-5.3.0/repository/components/patches/
+COPY modules/ $INSTALL_PATH/wso2as-5.3.0/modules/
+COPY lib/ $INSTALL_PATH/wso2as-5.3.0/repository/components/lib/
 COPY removed-bundles.txt /
 
-#Add WSO2 user
-RUN addgroup wso2 \
-    && adduser --system --shell /bin/bash --gecos 'WSO2User' --ingroup wso2 --disabled-login wso2user
-
 EXPOSE 9443 9763
-CMD ["/init.sh"]
-
+CMD ["bash", "-c", "source /init.sh"]
 

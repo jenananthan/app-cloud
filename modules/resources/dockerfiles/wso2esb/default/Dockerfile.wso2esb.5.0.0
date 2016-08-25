@@ -18,7 +18,7 @@
 
 FROM wso2-appcloud/wso2esb:5.0.0-base
 
-ENV CARBON_HOME_PATH /opt/wso2esb-5.0.0
+ENV CARBON_HOME_PATH /home/wso2user/wso2esb-5.0.0
 ENV CAPP_FILE ARTIFACT_NAME
 ENV CAR_DEPLOYMENT_DIR $CARBON_HOME_PATH/repository/deployment/server/carbonapps/
 ENV APP_HOST HOST_NAME

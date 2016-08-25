@@ -18,17 +18,18 @@
 #
 # ------------------------------------------------------------------------
 
-FROM java:8-jre
+FROM anapsix/alpine-java:8_server-jre_unlimited
 
-ENV MSF4J_HOME /srv/msf4j
+ENV MSF4J_HOME /home/wso2user/
 ENV PATH $MSF4J_HOME:$PATH
 ENV HTTPS_CONF /opt/conf/https/
 ENV JAVA_OPTS="-Xms128m -Xmx128m -XX:MaxMetaspaceSize=128m"
 
-RUN mkdir -p "$MSF4J_HOME" && \
+RUN apk update && \
+    apk add wget && \
+    mkdir -p "$MSF4J_HOME" && \
     mkdir -p "$HTTPS_CONF/" && \
-    addgroup wso2 && \
-    adduser --system --shell /bin/bash --gecos 'WSO2User' --ingroup wso2 --disabled-login wso2user
+    addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user 
 
 COPY wso2carbon.jks "$HTTPS_CONF"
 COPY netty-transports.yaml "$HTTPS_CONF"
@@ -36,6 +37,7 @@ COPY netty-transports.yaml "$HTTPS_CONF"
 # Add the startup script
 ADD init.sh /init.sh
 RUN chmod +x /init.sh
+USER wso2user
 
 WORKDIR $MSF4J_HOME
 

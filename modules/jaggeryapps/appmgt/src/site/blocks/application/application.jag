@@ -285,6 +285,7 @@ var log = new Log();
         var applicationHashId = applicationModule.getApplicationHashIdByName(applicationName);
         var applicationType = applicationModule.getApplication(applicationHashId).applicationType;
         var podDeleteTimeOut = modManager.getPropertyValue(POD_DELETE_TIMEOUT);
+        var status = applicationModule.getApplicationRevisionStatus(applicationHashId, applicationRevision);
 
         // redeploy application from kubernetes
         if(applicationName == null){
@@ -298,22 +299,27 @@ var log = new Log();
         if(versionKey == null){
             versionKey = mod.getVersionHashId(applicationName, applicationRevision)
         }
-        try {
-            if (applicationModule.redeployVersion(applicationName, applicationRevision, versionKey, applicationType)) {
-                response.status = 200;
-                response.message = "Application is successfully redeployed.";
-            } else {
-                response.status = 504;
-                response.content = "Unable to stop application within a time period of " + (podDeleteTimeOut/1000) +
-                        "s. Please submit request again.";
-            }
-        } catch (e) {
-            var msg = "Error while waiting for the pod to get deleted for application: " + applicationName +
-                    " and version: " + applicationRevision;
-            log.error(msg);
-            log.error(e);
+        if (status == APPLICATION_STOPPED || status == APPLICATION_INACTIVE) {
             response.status = 500;
-            response.content = msg;
+            response.content = "Unable to redeploy since the application version was stopped. Please start the application version.";
+        } else {
+            try {
+                if (applicationModule.redeployVersion(applicationName, applicationRevision, versionKey, applicationType)) {
+                    response.status = 200;
+                    response.message = "Application is successfully redeployed.";
+                } else {
+                    response.status = 504;
+                    response.content = "Unable to stop application within a time period of " + (podDeleteTimeOut / 1000) +
+                            "s. Please submit request again.";
+                }
+            } catch (e) {
+                var msg = "Error while waiting for the pod to get deleted for application: " + applicationName +
+                        " and version: " + applicationRevision;
+                log.error(msg);
+                log.error(e);
+                response.status = 500;
+                response.content = msg;
+            }
         }
     } else if(action == "startApplication"){
         var applicationName = request.getParameter("applicationName");
@@ -365,27 +371,34 @@ var log = new Log();
         var prevKey = request.getParameter("prevKey");
         var newKey = request.getParameter("newKey");
         var newValue = request.getParameter("newValue");
-        var keyValidation = validator.validateEnvKey(newKey);
-        if (!keyValidation.status) {
-            response.status = 400;
-            response.content = keyValidation.msg;
-            return;
-        } else {
-            var mod = jagg.module("application");
-            mod.updateRuntimeProperty(versionKey,prevKey,newKey,newValue);
-            response.status = 200;
-            response.content = keyValidation.msg;
-        }
 
+        if (applicationModule.isEnvironmentVariableExist(versionKey, prevKey)) {
+            var keyValidation = validator.validateEnvKey(newKey);
+            if (!keyValidation.status) {
+                response.status = 400;
+                response.content = keyValidation.msg;
+                return;
+            } else {
+                applicationModule.updateRuntimeProperty(versionKey, prevKey, newKey, newValue);
+                response.status = 200;
+                response.content = keyValidation.msg;
+            }
+        } else {
+            response.status = 500;
+            response.content = "No environment variable with key: " + prevKey + ". Please enter valid key.";
+        }
     } else if (action == "deleteRuntimeProperty"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
 
-        var mod = jagg.module("application");
-        mod.deleteRuntimeProperty(versionKey,key);
-        response.status = 200;
-        response.content = "Runtime property successfully deleted.";
-
+        if (applicationModule.isEnvironmentVariableExist(versionKey, key)) {
+            applicationModule.deleteRuntimeProperty(versionKey, key);
+            response.status = 200;
+            response.content = "Runtime property successfully deleted.";
+        } else {
+            response.status = 500;
+            response.content = "No environment variable with key: " + key + ". Please enter valid key.";
+        }
     } else if (action == "addRuntimeProperty"){
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
@@ -432,22 +445,28 @@ var log = new Log();
         var versionKey = request.getParameter("versionKey");
         var key = request.getParameter("key");
 
-        var mod = jagg.module("application");
-        mod.deleteTag(versionKey,key);
-        response.status = 200;
-        response.content = "Tag successfully deleted.";
-
+        if (applicationModule.isTagExist(versionKey, key)) {
+            applicationModule.deleteTag(versionKey, key);
+            response.status = 200;
+            response.content = "Tag successfully deleted.";
+        } else {
+            response.status = 500;
+            response.content = "No tag with key: " + key + ". Please enter valid key.";
+        }
     } else if (action == "updateTag"){
         var versionKey = request.getParameter("versionKey");
         var prevKey = request.getParameter("prevKey");
         var newKey = request.getParameter("newKey");
         var newValue = request.getParameter("newValue");
 
-        var mod = jagg.module("application");
-        mod.updateTag(versionKey,prevKey,newKey,newValue);
-        response.status = 200;
-        response.content = "Runtime property successfully updated.";
-
+        if (applicationModule.isTagExist(versionKey, prevKey)) {
+            applicationModule.updateTag(versionKey, prevKey, newKey, newValue);
+            response.status = 200;
+            response.content = "Tag successfully updated.";
+        } else {
+            response.status = 500;
+            response.content = "No tag with key: " + prevKey + ". Please enter valid key.";
+        }
     } else if (action == "getTags"){
         var versionKey = request.getParameter("versionKey");
         var mod = jagg.module("application");
@@ -487,10 +506,23 @@ var log = new Log();
 
     } else if (action == "deleteVersion"){
         var versionKey = request.getParameter("versionKey");
+        var applicationName = request.getParameter("applicationName");
         var mod = jagg.module("application");
         try {
-            mod.deleteVersion(versionKey, false, true);
-            print(true);
+            var defaultVersion = mod.getDefaultVersion(applicationName);
+            var defaultVersionHashId = mod.getVersionHashId(applicationName, defaultVersion);
+            var applicationHashId = mod.getApplicationHashIdByName(applicationName);
+            var versions = mod.getVersionListOfApplication(applicationHashId);
+            if (versions.length > 1 && (defaultVersionHashId == versionKey)) {
+                var msg = "You are trying to delete the default version, if you want to delete this particular version, " +
+                          "please select some other version as the default version and try again";
+                log.error(msg);
+                response.status = 400;
+                response.content = msg;
+            } else {
+                mod.deleteVersion(versionKey, false, true);
+                print(true);
+            }
         } catch (e) {
             var msg = "Error while deleting application version with the hash id : " + versionKey;
             log.error(msg);

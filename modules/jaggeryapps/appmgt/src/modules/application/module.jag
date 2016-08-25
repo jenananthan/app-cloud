@@ -264,6 +264,14 @@ jagg.module("application", {
 
     getEndpointsExtractor:function () {
         return jagg.require(jagg.getModulesDir() + "application/endpoints.jag").getEndpointsExtractor.apply(this, arguments);
+    },
+
+    isEnvironmentVariableExist:function () {
+        return jagg.require(jagg.getModulesDir() + "application/application.jag").isEnvironmentVariableExist.apply(this, arguments);
+    },
+
+    isTagExist:function () {
+        return jagg.require(jagg.getModulesDir() + "application/application.jag").isTagExist.apply(this, arguments);
     }
 });
 %>

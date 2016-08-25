@@ -16,36 +16,34 @@
 #
 # ------------------------------------------------------------------------
 
-FROM java:7-jre
+FROM anapsix/alpine-java:8_server-jre_unlimited
 
-ENV DEBIAN_FRONTEND noninteractive
 ENV WSO2CARBON_ZIP wso2esb-5.0.0.zip
-ENV INSTALL_PATH /opt/
+ENV INSTALL_PATH /home/wso2user/
 ENV CARBON_HOME_PATH $INSTALL_PATH/wso2esb-5.0.0
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:PermSize=64m"
+ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:MaxMetaspaceSize=128m"
 ENV ADMIN_PASS ""
 ENV WSO2_ESB_VERSION 5.0.0
+ENV CAR_DEPLOYMENT_DIR $CARBON_HOME_PATH/repository/deployment/server/carbonapps/
 
+RUN apk update && \
+    apk add pwgen git wget && \
+    addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+USER wso2user
 
 # Add the startup script
 ADD init.sh /init.sh
 
 # Copy carbon pack and required other resources
 COPY $WSO2CARBON_ZIP $INSTALL_PATH
+RUN unzip $INSTALL_PATH/$WSO2CARBON_ZIP -d $INSTALL_PATH/ && \
+    mkdir -p $CAR_DEPLOYMENT_DIR
+
 COPY patches/ $CARBON_HOME_PATH/repository/components/patches/
-ENV CAR_DEPLOYMENT_DIR $CARBON_HOME_PATH/repository/deployment/server/carbonapps/
-RUN mkdir -p $CAR_DEPLOYMENT_DIR
 COPY ContainerAPICompositeApplication_1.0.0.car $CAR_DEPLOYMENT_DIR
 
-RUN apt-get update --fix-missing && \
-        apt-get install -y pwgen git wget && \
-        chmod +x /init.sh && \
-        cd $INSTALL_PATH && unzip $WSO2CARBON_ZIP && \
-        addgroup wso2 && \
-        adduser --system --shell /bin/bash --gecos 'WSO2User' --ingroup wso2 --disabled-login wso2user
-
 EXPOSE 8243 8280
-CMD ["/init.sh"]
+CMD ["bash", "-c", "source /init.sh"]
 
 

@@ -20,16 +20,17 @@
 
 FROM wso2-appcloud/jaggery:0.11.0-base
 
+ENV CARBON_HOME_DIR="/home/wso2user/wso2as-5.3.0"
 ENV JAGGERY_APP_ZIP ARTIFACT_NAME
-ENV JAGGERY_APP_HOME /opt/wso2as-5.3.0/repository/deployment/server/jaggeryapps/
+ENV JAGGERY_APP_HOME $CARBON_HOME_DIR/repository/deployment/server/jaggeryapps/
 ENV APP_HOST HOST_NAME
 ENV TOTAL_MEMORY VAL_TOTAL_MEMORY
 
 COPY "$JAGGERY_APP_ZIP" "$JAGGERY_APP_HOME"
 WORKDIR "$JAGGERY_APP_HOME"
 RUN mv "$JAGGERY_APP_ZIP" ${JAGGERY_APP_ZIP%.upload}.zip && \
-    sed -i '/<!--HostName>/c\\t<HostName>'$APP_HOST'</HostName>' /opt/wso2as-5.3.0/repository/conf/carbon.xml && \
-    sed -i '/<!--MgtHostName>/c\\t<MgtHostName>'$APP_HOST'</MgtHostName>' /opt/wso2as-5.3.0/repository/conf/carbon.xml
+    sed -i '/<!--HostName>/c\\t<HostName>'$APP_HOST'</HostName>' $CARBON_HOME_DIR/repository/conf/carbon.xml && \
+    sed -i '/<!--MgtHostName>/c\\t<MgtHostName>'$APP_HOST'</MgtHostName>' $CARBON_HOME_DIR/repository/conf/carbon.xml
 
 WORKDIR "/"
 

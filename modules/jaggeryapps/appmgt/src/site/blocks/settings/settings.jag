@@ -21,6 +21,7 @@ include("/jagg/jagg.jag");
 include("/jagg/constants.jag");
 
 var mod = jagg.module("application");
+var validator = require('/site/themes/default/js/custom/validator.js');
 
 (function () {
     var action = request.getParameter("action");
@@ -32,10 +33,23 @@ var mod = jagg.module("application");
     if (action == "updateDefaultVersion") {
         var applicationName = request.getParameter("applicationName");
         var defaultVersion = request.getParameter("defaultVersion");
+        var applicationHashId = mod.getApplicationHashIdByName(applicationName);
+        var versions = mod.getVersionListOfApplication(applicationHashId);
+        var versionValidation = validator.validateApplicationVersionExistence(versions, defaultVersion);
 
         try {
-            var result = mod.changeMappedDomain(applicationName, defaultVersion);
-            print(result);
+            if (mod.getDefaultVersion(applicationName) == defaultVersion) {
+                response.status = 500;
+                response.content = "Version: " + defaultVersion + " is the default version. Please select another version.";
+            } else {
+                if (versionValidation.status) {
+                    var result = mod.changeMappedDomain(applicationName, defaultVersion);
+                    print(result);
+                } else {
+                    response.status = 500;
+                    response.content = versionValidation.msg;
+                }
+            }
         } catch (e) {
             var message = "Error while updating version : " + defaultVersion + " to the default version";
             log.error(message);

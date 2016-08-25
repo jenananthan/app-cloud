@@ -18,36 +18,34 @@
 #
 # ------------------------------------------------------------------------
 
-FROM java:7-jre
+FROM anapsix/alpine-java:8_server-jre_unlimited
 
-ENV DEBIAN_FRONTEND noninteractive
 ENV WSO2CARBON_ZIP wso2dss-3.5.0.zip
-ENV INSTALL_PATH /opt/
+ENV INSTALL_PATH /home/wso2user/
 ENV CARBON_HOME_PATH $INSTALL_PATH/wso2dss-3.5.0
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:PermSize=64m"
+ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:MaxMetaspaceSize=128m"
 ENV ADMIN_PASS ""
 ENV WSO2_DSS_VERSION 3.5.0
 
+RUN apk update && \
+    apk add pwgen git wget && \
+    addgroup wso2 && adduser -g '' -s /bin/bash -D -G wso2 wso2user
+
+USER wso2user
 
 # Add the startup script
 ADD init.sh /init.sh
 
 # Copy carbon pack and required other resources
-COPY $WSO2CARBON_ZIP $INSTALL_PATH
+COPY $WSO2CARBON_ZIP $INSTALL_PATH/
+RUN unzip $INSTALL_PATH/$WSO2CARBON_ZIP -d $INSTALL_PATH/
+
 COPY patches/ $CARBON_HOME_PATH/repository/components/patches/
 COPY modules/ $CARBON_HOME_PATH/modules/
 COPY lib/ $CARBON_HOME_PATH/repository/components/lib/
 COPY removed-bundles.txt /
 
-RUN apt-get update --fix-missing && \
-        apt-get install -y pwgen git wget && \
-        chmod +x /init.sh && \
-        cd $INSTALL_PATH && unzip $WSO2CARBON_ZIP && \
-        addgroup wso2 && \
-        adduser --system --shell /bin/bash --gecos 'WSO2User' --ingroup wso2 --disabled-login wso2user
-
 EXPOSE 9443 9763
-CMD ["/init.sh"]
+CMD ["bash", "-c", "source /init.sh"]
 
 

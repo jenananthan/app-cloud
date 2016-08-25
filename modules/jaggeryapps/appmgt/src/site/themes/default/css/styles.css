@@ -1024,7 +1024,7 @@ a.btn-action {
 }
 .block-general h3,
 .block-team h3,
-.block-database h3 {
+.block-database h3, .block-con-spec h3 {
     font-weight: 300;
     margin-top: 8px;
 }
@@ -1120,6 +1120,14 @@ a.btn-action {
 }
 .block-database {
     background-color: #0090d9;
+}
+
+.block-con-spec {
+    margin-top: 1em;
+    padding: 18px;
+    background-color: #4abbd9;
+    width: 100%;
+
 }
 .block-life-cycle {
     background-color: #0090d9;
@@ -1854,7 +1862,7 @@ a.btn-action {
     .version-url{
         width:45.1%;
     }
-    .block-general h3, .block-team h3, .block-database h3{
+    .block-general h3, .block-team h3, .block-database h3, .block-con-spec h3{
         font-size:20px;
     }
     .block-action-button{

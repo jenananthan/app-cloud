@@ -1706,4 +1706,25 @@ var getAllowedContainerSpecificationsForRuntime = function(runtimeID) {
      return applicationArray;
  }
 
+var isEnvironmentVariableExist = function(versionKey, envVariableKey) {
+    var envVariables = getEnvVariablesOfVersion(versionKey);
+
+    for (var i = 0; i < envVariables.length; i++) {
+        if (envVariables[i]["key"] == envVariableKey) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var isTagExist = function(versionKey, tagKey) {
+    var tags = getTags(versionKey);
+
+    for (var i = 0; i < tags.length; i++) {
+        if (tags[i]["key"] == tagKey) {
+            return true;
+        }
+    }
+    return false;
+}
 %>

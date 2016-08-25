@@ -20,7 +20,7 @@
 
 FROM wso2-appcloud/wso2dataservice:3.5.0-base
 
-ENV CARBON_HOME_PATH /opt/wso2dss-3.5.0
+ENV CARBON_HOME_PATH /home/wso2user/wso2dss-3.5.0
 ENV CAR_DEPLOYMENT_DIR $CARBON_HOME_PATH/repository/deployment/server/carbonapps/
 ENV MNT /mnt
 ENV APP_HOST HOST_NAME

@@ -19,12 +19,12 @@
 #
 # ------------------------------------------------------------------------
 
-CARBON_HOME_PATH=/opt/wso2dss-3.5.0
+CARBON_HOME_PATH=/home/wso2user/wso2dss-3.5.0
 #remove default java opts
 sed -i '/-Xms256m/d' $CARBON_HOME_PATH/bin/wso2server.sh
 
-sed -i "/port=\"9763\"/a  \\\t\t   proxyPort=\"80\"" $CARBON_HOME_PATH/repository/conf/tomcat/catalina-server.xml
-sed -i "/port=\"9443\"/a  \\\t\t   proxyPort=\"443\"" $CARBON_HOME_PATH/repository/conf/tomcat/catalina-server.xml
+sed -i "/port=\"9763\"/a   proxyPort=\"80\"" $CARBON_HOME_PATH/repository/conf/tomcat/catalina-server.xml
+sed -i "/port=\"9443\"/a   proxyPort=\"443\"" $CARBON_HOME_PATH/repository/conf/tomcat/catalina-server.xml
 #sed -i '/<WebContextRoot>/c\\t<WebContextRoot>/dss</WebContextRoot>' $CARBON_HOME_PATH/repository/conf/carbon.xml
 
 #Changing admin password

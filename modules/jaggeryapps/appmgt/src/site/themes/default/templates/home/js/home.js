@@ -547,7 +547,8 @@ function deleteApplication(){
 
     jagg.post("../blocks/application/application.jag", {
         action:"deleteVersion",
-        versionKey:selectedApplicationRevision.hashId
+        versionKey:selectedApplicationRevision.hashId,
+        applicationName:applicationName
     },function (result) {
         jagg.message({content: "The selected version was successfully deleted.", type: 'success', id:'view_log'});
         var versionCount = getVersionCount();
@@ -573,7 +574,7 @@ function deleteApplicationPopUp(){
         jagg.message({
             type:'warning', modalStatus: true, title:'Delete Application Version',
             content:'This version:' + selectedRevision + ' is set as the default version of the application. If you '
-            + 'really want to delete this please select some other version as the default version',
+            + 'want to delete this particular version, please select some other version as the default version',
             timeout: 8000
         });
     } else {
