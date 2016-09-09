@@ -40,9 +40,9 @@ jagg.template("page/master", function(inputs, outputs, jagg) {
 <body>
 <!--To enable notification banner, uncomment following HTML code snippet-->
 <!--body class="top-notification-active"-->
-    <!--div class="top-notification">
+    <div class="top-notification">
         <span class="hidden-xs">We are upgrading <%=pageTitle%></span>
-    </div-->
+    </div>
     <div id="wrap">
         <div id="header"><% jagg.includeBlocks(outputs.header); %></div>
         <div id="body"><% jagg.includeBlocks(outputs.body); %></div>
