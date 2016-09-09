@@ -1063,8 +1063,8 @@ a.btn-action {
     padding: 10px;
     background-color: #8b8b8b;
     border-color: transparent;
-    max-width: 62%;
-    min-width: 40%;
+    -webkit-flex: 1;
+    flex: 1;
 }
 .version-url>a>span{
     white-space: nowrap;
@@ -2919,7 +2919,28 @@ ul#appVersionList {
     padding-left : 0;
 }
  
- .left-menu-icon {
-     width: 30px;
- }
+.left-menu-icon {
+    width: 30px;
+}
+
+.nomarginflex{
+    margin-left: 0px;
+    margin-right: 0px;
+    display: -webkit-flex;
+    display: flex;
+}
+
+.requestbox{
+    margin-left : 0px;
+    padding-top : 10px;
+}
+
+.novertical-padding{
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.fullwidth{
+    width : 100%;
+}
 
