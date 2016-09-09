@@ -81,7 +81,7 @@ $(document).ready(function() {
         var parsedResult = JSON.parse(result);
         if(parsedResult.length == 0){
             $(".env-list").prepend(
-                '<div class="row"><div id="push"></div><div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">No Environmental Variables are created yet. </div></div>');
+                '<div class="row"><div id="push"></div><div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">No environmental variables are created yet. </div></div>');
         } else {
             for (var i = 0; i < parsedResult.length; i++) {
                 $(".env-list").prepend(

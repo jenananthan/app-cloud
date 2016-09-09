@@ -298,18 +298,21 @@ function listTags(){
         tagListLength = tags.length;
     }
     var tagString = '';
+    var tagTitleString = '';
     for(var i = 0; i < tagListLength; i++){
         if(i >= 3){
             break;
         }
         tagString += tags[i].labelName + " : " + tags[i].labelValue + "</br>";
+        tagTitleString += tags[i].labelName + " : " + tags[i].labelValue + "\n";
     }
     if(tagListLength > 3) {
         tagString += "</br><a class='view-tag' href='/appmgt/site/pages/tags.jag?applicationKey=" + applicationKey
-                             + "&versionKey=" + selectedApplicationRevision.hashId + "'>View All Tags</a>";
+                             + "&versionKey=" + selectedApplicationRevision.hashId + "' title='View All envs'>View All Tags</a>";
     }
 
     $('#tag-list').html(tagString);
+    $('#tag-list').prop('title', tagTitleString);
 }
 
 function listEnvs(){
@@ -319,18 +322,21 @@ function listEnvs(){
         envListLength = envs.length;
     }
     var envString = '';
+    var envTitleString = '';
     for(var i = 0; i < envListLength; i++){
         if(i >= 3){
             break;
         }
         envString += envs[i].propertyName + " : " + envs[i].propertyValue + "</br>";
+        envTitleString += envs[i].propertyName + " : " + envs[i].propertyValue + "\n";
     }
     if(envListLength > 3) {
         envString += "</br><a class='view-tag' href='/appmgt/site/pages/envs.jag?applicationKey=" + applicationKey
-                             + "&versionKey=" + selectedApplicationRevision.hashId + "'>View All envs</a>";
+                             + "&versionKey=" + selectedApplicationRevision.hashId + "' title='View All envs'>View All envs</a>";
     }
 
     $('#env-list').html(envString);
+    $('#env-list').prop('title', envTitleString);
 }
 
 // Icon initialization

@@ -1193,6 +1193,8 @@ a.btn-action {
 .block-team .block-icon,
 .block-database .block-icon {
     margin-top: 1em;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 .btn-create-version {
     float: right;
@@ -2213,12 +2215,7 @@ a.btn-action {
     }
 }
 
-.tag-list{
-    float: left;
-    padding-left: 30px;
-}
-
-.env-list{
+.list-box{
     float: left;
     padding-left: 30px;
 }
