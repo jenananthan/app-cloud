@@ -37,8 +37,8 @@ jagg.block("apptype/select", {
         }
         var cloudSpecificApplicationRepresentation = manager.getCloudTypeProperties().cloudSpecificApplicationRepresentation;
         var requestNewAppTypeSubjectMessage = 'Requesting a new ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' type';
-        var requestNewAppTypeURL = manager.getPropertyValue(manager.getCloudTypeProperties().properties.supportUrl) +
-                '&subject=' + requestNewAppTypeSubjectMessage;
+        var requestNewAppTypeURL = manager.getPropertyValue(CLOUD_MGT_URL) + CONTACT_US_URL +
+                '?cloudType=' + jagg.getSelectedCloud() + '&subject=' + requestNewAppTypeSubjectMessage;
 
         return {
             "appTypes": appTypes,

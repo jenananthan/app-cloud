@@ -40,9 +40,9 @@ jagg.block("application", {
         var appType = appTypesProperties[inputs.appTypeName];
         var applicationName = inputs.applicationName;
         var runninngApplicationCount = applicationModule.getRunningApplicationVersionCount();
-        var subscriptionPlanBaseURL = modManager.getPropertyValue("SubscriptionPlanBaseURL");
         var notAllowedEnvVariables = applicationModule.getNotAllowedEnvVariables();
-        var maxAppCount = applicationModule.getMaxInstanceCount();
+        var throttlingModule = jagg.module("throttling");
+        var maxAppCount = throttlingModule.getMaxInstanceCount();
         var allowedContainerSpecs = applicationModule.
             getAllowedContainerSpecificationsForRuntime(runtimes[0].id);
         var defaultVersion = applicationModule.getDefaultVersion(inputs.applicationName);
@@ -51,21 +51,23 @@ jagg.block("application", {
         var applications = applicationModule.getAllApplications();
 
         var requestNewAppTypeSubjectMessage = 'Requesting a new runtime for ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' type: ' + inputs.appTypeName;
-        var requestNewAppTypeURL = modManager.getPropertyValue(modManager.getCloudTypeProperties().properties.supportUrl) +
-                '&subject=' + requestNewAppTypeSubjectMessage;
+        var requestNewAppTypeURL = modManager.getPropertyValue(CLOUD_MGT_URL) + CONTACT_US_URL +
+                '?cloudType=' + jagg.getSelectedCloud() + '&subject=' + requestNewAppTypeSubjectMessage;
 
         var requestMoreAppsSubjectMessage = 'Requesting to run more than ' + maxAppCount + ' ' + cloudSpecificApplicationRepresentation.toLowerCase() + 's';
-        var requestMoreAppseURL = modManager.getPropertyValue(modManager.getCloudTypeProperties().properties.supportUrl) +
-                '&subject=' + requestMoreAppsSubjectMessage;
+        var requestMoreAppseURL = modManager.getPropertyValue(CLOUD_MGT_URL) + CONTACT_US_URL +
+                '?cloudType=' + jagg.getSelectedCloud() + '&subject=' + requestMoreAppsSubjectMessage;
         var allDBInfo = databaseModule.getAllDatabasesInfo();
         var noOfDbs = allDBInfo.length;
 
+        var isThrottled = throttlingModule.getThrottledStatus(allowedContainerSpecs);
+        //get container spec list that fit to resources
+        var throttledAllowedContainerSpecs = throttlingModule.getthrottledAllowedContainerSpecs(allowedContainerSpecs);
         return {
             "runtimes" : runtimes,
             "appType" : appType,
             "applicationName" : applicationName,
             "runninngApplicationCount" : runninngApplicationCount,
-            "subscriptionPlanBaseURL" : subscriptionPlanBaseURL,
             "notAllowedEnvVariables" : notAllowedEnvVariables,
             "maxAppCount" : maxAppCount,
             "allowedContainerSpecs" : allowedContainerSpecs,
@@ -76,7 +78,9 @@ jagg.block("application", {
             "requestNewAppTypeURL" : requestNewAppTypeURL,
             "requestMoreAppseURL" : requestMoreAppseURL,
             "allDBInfo": allDBInfo,
-            "noOfDbs": noOfDbs
+            "noOfDbs": noOfDbs,
+            "isThrottled": isThrottled,
+            "throttledAllowedContainerSpecs": throttledAllowedContainerSpecs
         };
     }
 });

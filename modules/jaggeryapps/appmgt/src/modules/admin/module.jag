@@ -59,6 +59,9 @@ jagg.module("admin", {
     },
     getTenantReplicaCount: function () {
         return jagg.require(jagg.getModulesDir() + "admin/admin.jag").getTenantReplicaCount.apply(this, arguments);
+    },
+    publishTenantSubscription: function () {
+        return jagg.require(jagg.getModulesDir() + "admin/admin.jag").publishTenantSubscription.apply(this, arguments);
     }
 });
 %>

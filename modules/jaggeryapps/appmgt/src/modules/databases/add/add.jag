@@ -23,6 +23,7 @@ include("/jagg/constants.jag");
 var log = new Log('modules/databases/add/add.jag');
 
 var modManager = jagg.module("manager");
+var modAppManager = jagg.module("application");
 var wso2_rss_instanceName = 'SYSTEM';
 var storageServerURL = modManager.getPropertyValue(PROPERTY_STORAGE_SERVER_URL);
 var environmentName = modManager.getPropertyValue(PROPERTY_RSS_ENVIRONMENT_NAME);
@@ -280,7 +281,7 @@ var generateDatabaseInfoForDataTable = function () {
             // currently we dont record database type, support only MySQL.change this when multiple types are allowed
             singleDatabaseInfo.type = "MySQL";
             var attachedUsersArray = getAttachedUsers(singleDatabaseInfo.dbName);
-            log.info(attachedUsersArray);
+            log.debug(attachedUsersArray);
             var attachedUsersString = "";
             for (var k in attachedUsersArray) {
                 if (k > 0) {
@@ -349,33 +350,6 @@ var getAllDatabasesInfo = function () {
 var getDatabaseCount = function () {
 	var allDatabases = getDatabases();
 	return allDatabases.length;
-};
-
-var getMaxDatabaseCount = function () {
-	try {
-		var tenantId = modManager.getTenantId();
-        var cloud = jagg.getCloudTypePropertyConfFilePath();
-        var cloudTypes =  Object.keys(cloud);
-		var maxDatabaseCount = 0;
-		for (var i = 0; i < cloudTypes.length; i++) {
-		    var dbCount = ApplicationManager.getMaxDatabaseCountForWhiteListedTenants(tenantId, cloudTypes[i]);
-		    if (dbCount == -1) {
-		        var subscriptionPlanBaseURL = modManager.getPropertyValue("SubscriptionPlanBaseURL");
-		        var subscriptionPlanURL = subscriptionPlanBaseURL + "/plans/" + cloudTypes[i] + "/FREE";
-		        var maxInstancesJson = get(subscriptionPlanURL, {}, "json");
-		        dbCount = parseInt(maxInstancesJson.data.maxDatabases);
-		    }
-
-		    if (dbCount > -1) {
-		        maxDatabaseCount += dbCount;
-		    }
-		}
-		return maxDatabaseCount;
-	} catch (e) {
-		log.error("Error while getting the maximum database count for tenant id : " + tenantId);
-		log.error(e);
-		throw e;
-	}
 };
 
 %>

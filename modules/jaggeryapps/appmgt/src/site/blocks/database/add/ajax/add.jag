@@ -69,7 +69,7 @@ var databaseModule = jagg.module("databases");
 
         try{
             var databaseCount = databaseModule.getDatabaseCount();
-            var maxDatabases = databaseModule.getMaxDatabaseCount();
+            var maxDatabases = jagg.module("throttling").getMaxDatabaseCount();
 
             if (databaseCount < maxDatabases) {
                 if (mod.isDatabasePrivilegeTemplateExist(DEFAULT_TEMPLATE) == 'false') {

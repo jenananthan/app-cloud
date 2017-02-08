@@ -48,7 +48,6 @@ var GOOGLE_ANALYTICS_ENABLED = "Google.Analytics.Enabled";
 var GOOGLE_TRACKING_ID = "Google.Tracking.Id";
 var ZOPIM_CHAT_ID = "Zopim.Chat.Id";
 var FILE_UPLOAD_TIMEOUT = "File.Upload.Timeout";
-var CUSTOM_URL_SETTINGS_PAGE_URL = "CustomUrlSettingsPage.Url";
 
 //events related constants
 var DATABASE_ADD = "Adding application to database";
@@ -97,8 +96,12 @@ var INTEGRATION_CLOUD_HOSTNAME = "IntegrationCloud.Hostname";
 var DAS_RECEIVER_AUTH_BASE64 = "Receiver.Auth";
 
 var CUSTOM = "custom";
-var PROFILE_URL = "Profile.Url";
-var CHANGE_PASSWORD_URL = "ChangePassword.Url";
+var PROFILE_URL = "/site/pages/user-profile.jag";
+var CHANGE_PASSWORD_URL = "/site/pages/change-password.jag";
+var CUSTOM_URL_SETTINGS_PAGE_URL = "/site/pages/custom_url.jag";
+var UPGRADE_BILLING_PLAN_URL= "/site/pages/payment-plans.jag";
+var CONTACT_US_URL= "/site/pages/contact-us.jag";
+var ACCOUNT_SUMMARY_URL = "/site/pages/account-summary.jag";
 
 //Regex patterns
 var ENV_KEY_REGEX = "^[A-Za-z0-9_]+$";
@@ -112,4 +115,12 @@ var DEFAULT_LOGIN_PERMISSION = "default.Login.Permission";
 //Service Prefixes
 var HTTP_SERVICE_PREFIX = "htp-";
 var HTTPS_SERVICE_PREFIX = "hts-";
+
+var MYSQL_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+var MYSQL_MAX_DATETIME_STRING = "9999-12-31 12:59:59";
+var MYSQL_MIN_DATETIME_STRING = "1000-01-01 00:00:00";
+
+var CLOUD_ADMIN_USERNAME="Cloud.Admin.Username";
+var CLOUD_ADMIN_PASSWORD="Cloud.Admin.Password";
+
 %>

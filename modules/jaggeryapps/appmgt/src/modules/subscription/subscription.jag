@@ -1,0 +1,146 @@
+<%
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *   WSO2 Inc. licenses this file to you under the Apache License,
+ *   Version 2.0 (the "License"); you may not use this file except
+ *   in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an
+ *   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *   KIND, either express or implied.  See the License for the
+ *   specific language governing permissions and limitations
+ *   under the License.
+ */
+
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+
+var log = new Log("module/runtimeLogs/runtimeLogs.jag");
+var manager = jagg.module("manager");
+var ApplicationManager = Packages.org.wso2.appcloud.core.ApplicationManager;
+var Subscription = Packages.org.wso2.appcloud.core.dto.Subscription;
+var sqlDateFormatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+var isFirstLogin = function () {
+    var subscription = getSubscription();
+    return subscription == null;
+};
+
+var getRemainingDaysToUpgrade = function () {
+    try {
+        var subscription = getSubscription();
+        if (subscription) {
+            var currentDate = new java.util.Date();
+            var endDate =  sqlDateFormatter.parse(subscription.endDate);
+            var difference = endDate.getTime() - currentDate.getTime();
+            if (difference > 0) {
+                return java.util.concurrent.TimeUnit.MILLISECONDS.toDays(difference) + 1;
+            }
+        }
+        return 0;
+    } catch(e){
+        log.error("Error while getting remaining days to upgrade for tenant: " + tenantId + " , cloudType : " + cloudType);
+        log.error(e);
+        throw e;
+    }
+};
+
+var getSubscription = function () {
+    var tenantId = manager.getTenantId(true);
+    var cloudType = jagg.getSelectedCloud();
+    try {
+        return ApplicationManager.getSubscription(tenantId, cloudType);
+    } catch(e){
+        log.error("Error while getting subscription detials for tenant: " + tenantId + " , cloudType : " + cloudType);
+        log.error(e);
+        throw e;
+    }
+}
+
+var generateSubscriptionObject = function (tenantId, cloudType, plan, startDate, endDate, status) {
+    var billingPlanProperties = jagg.getCloudTypePropertyConfFilePath()[cloudType].billing.plans;
+    var subscription = new Subscription();
+    for(var i = 0; billingPlanProperties.length; i++) {
+        if (billingPlanProperties[i].id == plan) {
+            subscription.setTenantId(tenantId);
+            subscription.setPlan(plan);
+            subscription.setMaxApplicationCount(billingPlanProperties[i].maxApplicationCount);
+            subscription.setMaxDatabaseCount(billingPlanProperties[i].maxDatabaseCount);
+            subscription.setCloudType(cloudType);
+            subscription.setMaxReplicaCount(billingPlanProperties[i].maxReplicaCount);
+            subscription.setMaxMemory(billingPlanProperties[i].maxMemory);
+            subscription.setMaxCpu(billingPlanProperties[i].maxCpu);
+            subscription.setStartDate(startDate);
+            subscription.setEndDate(endDate);
+            subscription.setIsWhiteListed(0);
+            subscription.setStatus(status);
+            break;
+        }
+    }
+    return subscription;
+};
+
+var addNewTenantSubscription = function (tenantId, cloudType, plan, startDate, endDate, status) {
+    try {
+        var subscription = generateSubscriptionObject(tenantId, cloudType, plan, startDate, endDate, status);
+        ApplicationManager.addNewSubscription(subscription);
+    } catch(e){
+        log.error("Error while adding new tenant subscription [" + plan + "] for tenant: " + tenantId + " , cloudType : " + cloudType);
+        log.error(e);
+        throw e;
+    }
+};
+
+var upgradeTenantSubscription = function (tenantId, cloudType, plan, startDate, endDate, status) {
+
+    try {
+        var subscription = generateSubscriptionObject(tenantId, cloudType, plan, startDate, endDate, status);
+        ApplicationManager.updateSubscription(subscription);
+    } catch(e){
+        log.error("Error while upgrading new tenant subscription [" + plan + "] for tenant: " + tenantId + " , cloudType : " + cloudType);
+        log.error(e);
+        throw e;
+    }
+};
+
+var isPaidAccount = function() {
+    var subscription = getSubscription();
+    if (subscription) {
+        return !(subscription.getPlan() == "FREE" || subscription.getPlan() == 'TRIAL');
+    }
+    return false;
+};
+
+// This will be called by cloudmgt to inform subscription change
+var publishTenantSubscription = function (tenantDomain, cloudType, plan, startDate, endDate, status) {
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
+    var subscription = ApplicationManager.getSubscription(tenantId, cloudType);
+    if (subscription) {
+        if (status == "EXTENDED" || status == "PENDING_DISABLED") {
+            // end date | status
+            subscription.setStatus(status);
+            subscription.setEndDate(endDate);
+            ApplicationManager.updateSubscription(subscription);
+            log.info("Updated tenant subscription for tenantId : " + tenantId + ", plan : " + plan + ", status : " + status);
+
+        } else if (status == "ACTIVE") {
+            log.info(status);
+            // end date | status | plan | default values -> upgrade
+            upgradeTenantSubscription(tenantId, cloudType, plan, startDate, endDate, status);
+            log.info("Created tenant subscription for tenantId : " + tenantId + ", plan : " + plan + ", status : " + status);
+        }
+    } else {
+        log.info(status);
+        // trial active
+        addNewTenantSubscription(tenantId, cloudType, plan, startDate, endDate, status);
+        log.info("Created tenant subscription for tenantId : " + tenantId + ", plan : " + plan + ", status : " + status);
+    }
+};
+%>
+
+

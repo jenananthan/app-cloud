@@ -118,6 +118,7 @@ var messageTimer;
     };
 
 
+
     /*
     usage
     Show info dialog
@@ -209,7 +210,7 @@ var messageTimer;
                                 }
                             }
                             },
-                            {addClass: 'btn btn-default', text: 'No', onClick: function($noty) {
+                            {addClass: 'btn btn-default', text: params.noText ? params.noText : 'No', onClick: function($noty) {
                                 $noty.close();
                                 if (isFunction(params.noCallback)) {
                                     params.noCallback();
@@ -227,8 +228,6 @@ var messageTimer;
                     });
 
     };
-
-
 
 		var e = jQuery.Event("keyup"); // or keypress/keydown
 		e.keyCode = 27; // for Esc

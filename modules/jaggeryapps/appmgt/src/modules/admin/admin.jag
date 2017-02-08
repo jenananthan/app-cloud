@@ -262,18 +262,18 @@ var whiteListApplicationVersion = function (applicationName, applicationRevision
 };
 
 var whiteListTenant = function (tenantDomain, maxAppCount, maxDatabaseCount, cloudType, replicaCount) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     ApplicationManager.whiteListTenant(tenantId, maxAppCount, maxDatabaseCount, cloudType, replicaCount);
 };
 
 var getVersionHashId = function(applicationName, versionName, tenantDomain){
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     var versionHashId = Util.getVersionHashId(applicationName, versionName, tenantId)
     return versionHashId;
 };
 
 var getApplicationVersions = function (tenantDomain, applicationName) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     var applicationHashId = Util.getApplicationHashId(applicationName, tenantId);
     var applicationVersions = [];
 
@@ -346,22 +346,22 @@ var updateContainerSpecification = function (tenantDomain, applicationName, appl
 };
 
 var whiteListMaxDatabaseCount = function (tenantDomain, maxDatabaseCount, cloudType) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     ApplicationManager.whiteListMaxDatabaseCount(tenantId, maxDatabaseCount, cloudType);
 };
 
 var whiteListMaxApplicationCount = function (tenantDomain, maxAppCount, cloudType) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     ApplicationManager.whiteListMaxAppCount(tenantId, maxAppCount, cloudType);
 };
 
 var whiteListMaxReplicaCount = function (tenantDomain, cloudType, replicaCount) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     ApplicationManager.whiteListMaxReplicaCount(tenantId, cloudType, replicaCount);
 };
 
 var getTenantMaxDatabaseCount = function (tenantDomain, cloudType) {
-    var tenantId = modManager.getTenantIdForGivenTenantDomain(tenantDomain);
+    var tenantId = managerModule.getTenantIdForGivenTenantDomain(tenantDomain);
     var databaseCountObj = {};
     try {
         databaseCountObj.maxDatabaseCount = ApplicationManager.getMaxDatabaseCountForWhiteListedTenants(tenantId, cloudType);
@@ -370,6 +370,49 @@ var getTenantMaxDatabaseCount = function (tenantDomain, cloudType) {
         throw e;
     }
     return databaseCountObj;
+};
+
+var publishTenantSubscription = function (tenantDomain, cloudType, plan, startDate, endDate, status) {
+    jagg.module("subscription").publishTenantSubscription(tenantDomain, cloudType, plan, startDate, endDate, status);
+};
+
+/*
+    This method will be used to stop following types of applications
+        1. Trial apps after 12 hours completed
+        3. apps which are in cancelled (PENDING_DISBALE) subscription plan status
+*/
+var killApplications = function (numberOfHours, isTrialCompleted, isSubscriptionCancelled) {
+    // stop trial apps after x hours
+    getTrialApplicationVersionsByRunningTimePeriod(numberOfHours);
+    // stop apps when subscription ends (trial and paid)
+    getApplicationVersionsReachedCancelEffectiveDate();
+};
+
+var getTrialApplicationVersionsByRunningTimePeriod = function (numberOfHours) {
+    var trialApplications = ApplicationManager.getTrialApplicationVersionsByRunningTimePeriod(numberOfHours);
+    for (var i = 0; i < trialApplications.length; i++) {
+        var trialApplication = trialApplications[i];
+        try {
+            stopIdleApplicationByRunningTimePeriod(trialApplication.getHashId(), trialApplication.getTenantId());
+        } catch (e) {
+            log.error("Failed to stop application with hashId:" + trialApplication.getHashId() +
+                    " and continue stopping other applications.");
+            log.error(e);
+        }
+    }
+};
+var getApplicationVersionsReachedCancelEffectiveDate = function() {
+    var applications = ApplicationManager.getApplicationVersionsReachedCancelEffectiveDate();
+    for (var i = 0; i < applications.length; i++) {
+        var application = applications[i];
+        try {
+            stopIdleApplicationByRunningTimePeriod(application.getHashId(), application.getTenantId());
+        } catch (e) {
+            log.error("Failed to stop application with hashId:" + application.getHashId() +
+                    " and continue stopping other applications.");
+            log.error(e);
+        }
+    }
 };
 
 %>

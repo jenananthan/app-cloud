@@ -202,10 +202,6 @@ jagg.module("application", {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getNotAllowedEnvVariables.apply(this, arguments);
     },
 
-    getMaxInstanceCount: function () {
-        return jagg.require(jagg.getModulesDir() + "application/application.jag").getMaxInstanceCount.apply(this, arguments);
-    },
-
     stopOtherVersions: function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").stopOtherVersions.apply(this, arguments);
     },
@@ -303,8 +299,8 @@ jagg.module("application", {
     getReplicaCountForVersion:function () {
         return jagg.require(jagg.getModulesDir() + "application/application.jag").getReplicaCountForVersion.apply(this, arguments);
     },
-    getMaxReplicaCount:function () {
-        return jagg.require(jagg.getModulesDir() + "application/application.jag").getMaxReplicaCount.apply(this, arguments);
+    getVersionByHashId:function () {
+        return jagg.require(jagg.getModulesDir() + "application/application.jag").getVersionByHashId.apply(this, arguments);
     }
 });
 %>

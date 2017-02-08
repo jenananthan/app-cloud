@@ -28,14 +28,18 @@ jagg.block("database/add", {
     },
     getOutputs: function (inputs) {
         var databaseModule = jagg.module("databases");
+        var applicationModule = jagg.module("application");
         var dbUsers = databaseModule.getDatabaseUsers();
         var databaseCount = databaseModule.getDatabaseCount();
-        var maxDatabases = databaseModule.getMaxDatabaseCount();
+        var throttlingManager = jagg.module("throttling");
+        var maxDatabases = throttlingManager.getMaxDatabaseCount();
+        var isDatabaseCountThrottled = throttlingManager.isDatabaseCountThrottled();
 
         return {
             "dbUsers": dbUsers,
             "databaseCount" : databaseCount,
-            "maxDatabases" : maxDatabases
+            "maxDatabases" : maxDatabases,
+            "isDatabaseCountThrottled" : isDatabaseCountThrottled
            };
         }
   });

@@ -54,13 +54,13 @@ jagg.block("home", {
         var tenantDomain = managerModule.getTenantDomain();
 
         var pageTitle = managerModule.getCloudTypeProperties().pageTitle;
-        var maxAppCount = applicationModule.getMaxInstanceCount();
+        var maxAppCount = jagg.module("throttling").getMaxInstanceCount();
         var applicationCount = applicationModule.getRunningApplicationVersionCount();
         var cloudSpecificApplicationRepresentation = managerModule.getCloudTypeProperties().cloudSpecificApplicationRepresentation;
 
         var requestNewAppTypeSubjectMessage = 'Requesting to keep ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' : ' + application.applicationName + ' running for an extended period of time';
-        var requestNewAppTypeURL = managerModule.getPropertyValue(managerModule.getCloudTypeProperties().properties.supportUrl) +
-                '&subject=' + requestNewAppTypeSubjectMessage;
+        var requestNewAppTypeURL = managerModule.getPropertyValue(CLOUD_MGT_URL) + CONTACT_US_URL +
+                '?cloudType=' + jagg.getSelectedCloud() + '&subject=' + requestNewAppTypeSubjectMessage;
 
         var dashboardProperties = managerModule.getDashboardTypeProperties();
         var replicaCount = applicationModule.getReplicaCountForVersion(application.applicationName, selectedRevision);

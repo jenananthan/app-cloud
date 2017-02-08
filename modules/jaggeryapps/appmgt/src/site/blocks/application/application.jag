@@ -239,23 +239,9 @@ var log = new Log();
                     response.content = logMessage;
                     return;
                 }
-            } else {
-                //Since the user is trying to create a new application we check if the existing application count is
-                //less than the maximum amount of applications that can be created
-                var RunningApplicationCount = applicationModule.getRunningApplicationVersionCount();
-                var maxRunningAppCount = applicationModule.getMaxInstanceCount();
-                if (RunningApplicationCount < maxRunningAppCount) {
-                    isAppCountLowerThanMax = true;
-                } else {
-                    logMessage = "Application creation request not accepted because the application count has " +
-                            "reached maximum limit of " + maxRunningAppCount;
-                    log.warn(logMessage);
-                    response.status = 200;
-                    response.content = logMessage;
-                    return;
-                }
             }
-            if (isAppCountLowerThanMax) {
+            var isApplicationCreatePossible = jagg.module("throttling").isApplicationCreatePossible(conSpecCpu, conSpecMemory);
+            if (isApplicationCreatePossible) {
                 if (isFileAttached == 'true') {
                     var fileSuccessfullyUploaded = applicationModule.
                         uploadExistingArchive(uploadedArtifact, appTypeName, applicationName, applicationRevision);
@@ -288,7 +274,7 @@ var log = new Log();
                 response.content = logMessage;
                 return;
             } else {
-                logMessage = "Maximum number of applications that you can create is " + maxRunningAppCount;
+                logMessage = "Application creation request not accepted because no resources available to create new application/version";
                 log.warn(logMessage)
                 response.status = 200;
                 response.content = logMessage;
@@ -370,12 +356,11 @@ var log = new Log();
             }
         }
     } else if(action == "startApplication"){
-        var RunningApplicationCount = applicationModule.getRunningApplicationVersionCount();
-        var maxRunningAppCount = applicationModule.getMaxInstanceCount();
-        if (RunningApplicationCount < maxRunningAppCount) {
+        var versionKey = request.getParameter("versionKey");
+        var isApplicationStartPossible = jagg.module("throttling").isApplicationStartPossible(versionKey);
+        if (isApplicationStartPossible) {
             var applicationName = request.getParameter("applicationName");
             var applicationRevision = request.getParameter("applicationRevision");
-            var versionKey = request.getParameter("versionKey");
             var applicationHashId = applicationModule.getApplicationHashIdByName(applicationName);
             var versions = applicationModule.getVersionListOfApplication(applicationHashId);
             var applicationType = applicationModule.getApplication(applicationHashId).applicationType;
@@ -385,8 +370,7 @@ var log = new Log();
             applicationModule.redeployApplication(applicationName, applicationRevision, versionKey, applicationType, exposureLevel);
             print(stringify(versions));
         } else {
-            logMessage = "Application creation request not accepted because the application count has " +
-                    "reached maximum limit of " + maxRunningAppCount;
+            logMessage = "Application start request not accepted because no enough resources available to start another application";
             log.warn(logMessage);
             response.status = 406;
             response.content = logMessage;

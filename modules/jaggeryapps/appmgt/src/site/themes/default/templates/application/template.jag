@@ -28,7 +28,6 @@ jagg.template("application", function (inputs, outputs, jagg) {
         var notAllowedEnvVariables = outputs.notAllowedEnvVariables;
         var isAppTypeBuildable = appType.buildable;
         var applicationName = outputs.applicationName;
-        var subscriptionPlanBaseURL = outputs.subscriptionPlanBaseURL;
         var encodedLabels = request.getParameter("encodedLabels");
         var encodedEnvs = request.getParameter("encodedEnvs");
         var log = new Log();
@@ -36,7 +35,6 @@ jagg.template("application", function (inputs, outputs, jagg) {
         var decodedEnvs = parse(decodeURIComponent(encodedEnvs, "UTF-8"));
         var newVersion = request.getParameter("newVersion");
         var data = null;
-        var allowedRuntimeContainerSpecJson = outputs.allowedContainerSpecs;
 		var maxApplications = outputs.maxAppCount;
         var defaultVersion = outputs.defaultVersion;
         var appTypeCount = outputs.appTypeCount;
@@ -47,6 +45,8 @@ jagg.template("application", function (inputs, outputs, jagg) {
         var requestMoreAppseURL = outputs.requestMoreAppseURL;
         var allDBInfo = outputs.allDBInfo;
         var noOfDbs = outputs.noOfDbs;
+        var isThrottled = outputs.isThrottled;
+        var allowedRuntimeContainerSpecJson = outputs.throttledAllowedContainerSpecs;
     %>
 
       <link rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('css/bootstrap-3.2.0/bootstrap.min.css'))%>">
@@ -72,6 +72,7 @@ jagg.template("application", function (inputs, outputs, jagg) {
     var cloudSpecificApplicationRepresentation = "<%=cloudSpecificApplicationRepresentation%>";
     var runningApplicationCount = <%=runningApplicationCount%>;
     var maxApplications = <%=maxApplications%>;
+    var isThrottled = <%=isThrottled%>;
     var conSpecs = <%=conSpecs%>;
     var retryCount = 0;
     var iconErrorMsg = "Invalid Image";                // used to hold the validation error message of the app icon
@@ -129,13 +130,14 @@ jagg.template("application", function (inputs, outputs, jagg) {
             } else {
                 initSelect2(null, valueElem, "", allDBInfo);
             }
-            if (runningApplicationCount >= maxApplications) {
+
+            if (isThrottled){
                 $('#outerContainer').empty();
                 $('#outerContainer').html('<div class="container-fluid"><div class="row row-centered">' +
-                    '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
-                    '<h2>You can run only up to '+ maxApplications +' '+ cloudSpecificApplicationRepresentation.toLowerCase() + 's/versions simultaneously on a free subscription.</h2>' +
-                    '1. Stop an existing ' + cloudSpecificApplicationRepresentation.toLowerCase() + '/version to continue.<br>'+
-                    '2. <a href="<%=requestMoreAppseURL%>" target="_blank">Submit a request</a> to run more ' + cloudSpecificApplicationRepresentation.toLowerCase() + 's on free subscription.</div></div></div></div>');
+                  '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
+                  '<h2>No enough resources to create new application.</h2>' +
+                  '1. Stop an existing ' + cloudSpecificApplicationRepresentation.toLowerCase() + '/version to continue.<br>'+
+                  '2. <a href="<%=requestMoreAppseURL%>" target="_blank">Submit a request</a> to upgrade ' + cloudSpecificApplicationRepresentation.toLowerCase() + 's on your subscription.</div></div></div></div>');
                 return;
             }
 

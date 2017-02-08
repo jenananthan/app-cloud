@@ -1,0 +1,196 @@
+<%
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *   WSO2 Inc. licenses this file to you under the Apache License,
+ *   Version 2.0 (the "License"); you may not use this file except
+ *   in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an
+ *   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *   KIND, either express or implied.  See the License for the
+ *   specific language governing permissions and limitations
+ *   under the License.
+ */
+
+include("/jagg/jagg.jag");
+include("/jagg/constants.jag");
+
+var log = new Log("module/throttling/throttling.jag");
+var manager = jagg.module("manager");
+var subscriptionManager = jagg.module("subscription");
+var applicationModule = jagg.module("application");
+var ApplicationManager = Packages.org.wso2.appcloud.core.ApplicationManager;
+
+var isDatabaseCountThrottled = function  () {
+    var subscription = subscriptionManager.getSubscription();
+    var maxDatabaseCount = subscription.getMaxDatabaseCount();
+    var runningDatabaseCount = jagg.module("databases").getDatabaseCount();
+    return runningDatabaseCount >= maxDatabaseCount;
+};
+
+var getMaxInstanceCount = function () {
+    try {
+        var subscription = subscriptionManager.getSubscription();
+        return subscription.getMaxApplicationCount();
+    } catch (e) {
+        log.error("Error while getting the maximum application count for tenant: " + tenantId);
+        log.error(e);
+        throw e;
+    }
+};
+
+var getMaxReplicaCount = function() {
+    try {
+        var subscription = subscriptionManager.getSubscription();
+        return parseInt(subscription.getMaxReplicaCount());
+    } catch (e) {
+        log.error("Error while getting the maximum replica count for tenant: " + tenantId);
+        log.error(e);
+        throw e;
+    }
+};
+
+var getMaxDatabaseCount = function () {
+    try {
+        var subscription = subscriptionManager.getSubscription();
+        return subscription.getMaxDatabaseCount();
+    } catch (e) {
+        log.error("Error while getting the maximum database count for tenant id : " + tenantId);
+        log.error(e);
+        throw e;
+    }
+};
+
+var isApplicationStartPossible = function(versionHashId) {
+    var subscription = subscriptionManager.getSubscription();
+    // check running app count
+    var maxAppCount = subscription.getMaxApplicationCount();
+    var runningAppCount = applicationModule.getRunningApplicationVersionCount();
+    if (runningAppCount >= maxAppCount) {
+        return false;
+    }
+    // check cpu and memory usage
+    var versionInfo = applicationModule.getVersionByHashId(versionHashId);
+    var tenantId = manager.getTenantId(true);
+    var tenantTotalResourceUsage = getTenantTotalResourceUsage(tenantId);
+    var aggregateCpu = tenantTotalResourceUsage["totalCpu"] + parseInt(versionInfo.getConSpecCpu());
+    var aggregateMemory = tenantTotalResourceUsage["totalRam"] + parseInt(versionInfo.getConSpecMemory());
+    if (aggregateCpu > subscription.maxCpu || aggregateMemory > subscription.maxMemory) {
+        return false;
+    }
+
+    return true;
+};
+
+var isApplicationCreatePossible = function(conSpecCpu, conSpecMemory) {
+    var subscription = subscriptionManager.getSubscription();
+    // check running app count
+    var maxAppCount = subscription.getMaxApplicationCount();
+    var runningAppCount = applicationModule.getRunningApplicationVersionCount();
+    if (runningAppCount >= maxAppCount) {
+        return false;
+    }
+    // check cpu and memory usage
+    var tenantId = manager.getTenantId(true);
+    var tenantTotalResourceUsage = getTenantTotalResourceUsage(tenantId);
+    var aggregateCpu = tenantTotalResourceUsage["totalCpu"] + parseInt(conSpecCpu);
+    var aggregateMemory = tenantTotalResourceUsage["totalRam"] + parseInt(conSpecMemory);
+    if (aggregateCpu > subscription.maxCpu || aggregateMemory > subscription.maxMemory) {
+        return false;
+    }
+
+    return true;
+};
+//Get total resource usage by adding all running instances resources in to new instance resource and
+//compare with allowed cumulative resource usage.
+var getThrottledStatus = function(allowedContainerSpecs){
+    var tenantId = manager.getTenantId(true);
+    var isThrottled = true;
+    //Get  Tier CPU and RAM
+    var subscription = subscriptionManager.getSubscription(); //(tenantId);
+    //Get total resource usage of all running applications
+    var tenantTotalResourceUsage = getTenantTotalResourceUsage(tenantId);
+    var runningAppCount = applicationModule.getRunningApplicationVersionCount();
+    var maxCpu = subscription.getMaxCpu();
+    var maxRam = subscription.getMaxMemory();
+    var maxApps = subscription.getMaxApplicationCount();
+
+    for(var i = 0 ; i < allowedContainerSpecs.data.length; i++ ) {
+        var conSpecs = {};
+        conSpecs["cpu"] = JSON.parse(allowedContainerSpecs.data[i].cpu);
+        conSpecs["ram"] = JSON.parse(allowedContainerSpecs.data[i].memory);
+        var aggregateCpu = conSpecs["cpu"] + tenantTotalResourceUsage["totalCpu"];
+        var aggregateRam = conSpecs["ram"] + tenantTotalResourceUsage["totalRam"];
+        if((maxApps > runningAppCount) && (maxCpu >= aggregateCpu && maxRam >= aggregateRam)){
+            isThrottled = false;
+            break;
+        }
+    }
+
+    return isThrottled;
+};
+
+
+//Get total resource usage by adding all running instances resources
+var getTenantTotalResourceUsage = function(tenantId){
+    var allTenantRunningApplicationMap = ApplicationManager.getRunningApplicationsOfTenant(tenantId);
+    var totalRam = 0;
+    var totalCpu = 0;
+    if (allTenantRunningApplicationMap && allTenantRunningApplicationMap.entrySet()) {
+        var iterator = allTenantRunningApplicationMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            var entry = iterator.next();
+            var tenantId = entry.getKey();
+            var appList = [];
+            var applicationList = entry.getValue();
+            for (var i = 0; i < applicationList.size(); i++) {
+                if (applicationList != null) {
+                    var app = applicationList.get(i);
+                    if (app != null) {
+                        var obj = {};
+                        totalCpu = totalCpu + app.getCpu();
+                        totalRam = totalRam + app.getRam();
+                    } else {
+                        log.warn("One of the running applications of tenant:" + tenantId + " has a null app.");
+                    }
+                } else {
+                    log.warn("Number of running application for the tenant:" + tenantId + " is zero.");
+                }
+            }
+        }
+        return { "totalCpu": totalCpu,
+            "totalRam": totalRam };
+    }
+};
+
+var getthrottledAllowedContainerSpecs = function(allowedContainerSpecs){
+    var tenantId = manager.getTenantId(true);
+    var isThrottled = true;
+    var subscription = subscriptionManager.getSubscription(); //(tenantId);
+    var tenantTotalResourceUsage = getTenantTotalResourceUsage(tenantId);
+    var maxCpu = subscription.getMaxCpu();
+    var maxRam = subscription.getMaxMemory();
+    var possibleContainerSpecs = {"data" : []};
+    for(var i = 0 ; i < allowedContainerSpecs.data.length; i++ ) {
+        var conSpecs = {};
+        conSpecs["cpu"] = JSON.parse(allowedContainerSpecs.data[i].cpu);
+        conSpecs["ram"] = JSON.parse(allowedContainerSpecs.data[i].memory);
+        var aggregateCpu = conSpecs["cpu"] + tenantTotalResourceUsage["totalCpu"];
+        var aggregateRam = conSpecs["ram"] + tenantTotalResourceUsage["totalRam"];
+        if (aggregateCpu > maxCpu || aggregateRam > maxRam) {
+
+        } else {
+            possibleContainerSpecs.data.push(allowedContainerSpecs.data[i]);
+        }
+    }
+    return possibleContainerSpecs;
+};
+
+%>
+
+
