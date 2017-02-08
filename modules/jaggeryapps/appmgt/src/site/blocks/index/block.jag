@@ -48,7 +48,7 @@ jagg.block("index", {
         for (var x = 0; x < applications.length; x++) {
             applications[x].category = appTypesProperties[applications[x].applicationType].category;
         }
-        
+
         return {
             "applications" : applications,
             "applicationName" :applicationName,

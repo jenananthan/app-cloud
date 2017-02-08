@@ -21,8 +21,6 @@
     "keyStoreName" : "/home/vagrant/setup/setup/wso2as-5.2.1/repository/resources/security/wso2carbon.jks",
     "responseSigningEnabled":true,
     "assertionSigningEnabled":true,
-    "audienceRestrictionsEnabled":true,
-    "verifyAssertionValidityPeriod":true,
-    "timestampSkewInSeconds":300
+    "audienceRestrictionsEnabled":true
   }
 }

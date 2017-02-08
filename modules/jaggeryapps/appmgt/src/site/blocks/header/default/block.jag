@@ -40,7 +40,6 @@ jagg.block("header/default", {
         var tenantDomain = manager.getTenantDomain(true);
         var cloudTypeProperties = manager.getCloudTypeProperties();
         var docUrl = manager.getPropertyValue(cloudTypeProperties.properties.documentationUrl);
-        var supportUrl = manager.getPropertyValue(cloudTypeProperties.properties.supportUrl);
         var cloudTitle = cloudTypeProperties.cloudTitle;
         var cloudIcon = cloudTypeProperties.cloudIcon;
 
@@ -50,16 +49,95 @@ jagg.block("header/default", {
         var integrationCloudURL = manager.getPropertyValue(INTEGRATION_CLOUD_URL);
         var apiCloudPublisherURL = manager.getPropertyValue(API_CLOUD_PUBLISHER__URL);
         var cloudMgtURL = manager.getPropertyValue(CLOUD_MGT_URL);
-        var changePasswordURL = manager.getPropertyValue(CHANGE_PASSWORD_URL);
-        var profileURL = manager.getPropertyValue(PROFILE_URL);
         var zopimChatId = manager.getPropertyValue(ZOPIM_CHAT_ID);
+
+        var subscriptionManager = jagg.module("subscription");
+        var isFirstLogin = subscriptionManager.isFirstLogin();
+        if (isFirstLogin) {
+
+            // login to cloud mgt and get cookie
+            var cookie = null;
+            try {
+                var loginUrl = cloudMgtURL + "/site/blocks/user/authenticate/ajax/login.jag";
+                var loginData = {
+                    "action": "login",
+                    "userName" : manager.getPropertyValue(CLOUD_ADMIN_USERNAME),
+                    "password" : manager.getPropertyValue(CLOUD_ADMIN_PASSWORD)
+                };
+
+                log.info("loginUrl " + loginUrl);
+                log.info("loginData " + stringify(loginData));
+
+                var loginResult = post(loginUrl, loginData, {} , 'json');
+                var loginResponse = loginResult.xhr.responseText;
+                if (loginResponse.error == "true") {
+                    throw new Error(loginResponse.message);
+                } else {
+                    cookie = loginResult.xhr.getResponseHeader(SET_COOKIE_HEADER);
+                }
+            } catch (e) {
+                log.error("Exception occurred during establishing connection to " + serviceId);
+                log.error(e);
+                throw e;
+            }
+
+            //call cloud mgt api
+            var data = {
+                action: "informFirstLogin",
+                tenantDomain: tenantDomain,
+                cloudType: jagg.getSelectedCloud()
+            };
+            var header = {
+                "Cookie" : cookie
+            };
+
+            var informFirstLoginApi= cloudMgtURL + "/site/blocks/admin/admin.jag";
+            try {
+                var result = post(informFirstLoginApi, data, header, 'json');
+            } catch (e) {
+                log.error("Exception occurred during inform first login to cloud mgt");
+                log.error(e);
+                throw e;
+            }
+
+            // This added temporary, to add subscription record when tenant login first time
+            // once we integrate with the cloudmgt we need to remove this.
+            // correct fix is invoking cloudmgt rest api
+            /*
+             var cloudType = jagg.getSelectedCloud();
+             var plan = cloudTypeProperties.billing.defaultPlan;
+             var trialPeriod = cloudTypeProperties.billing.trialPeriod;
+             var startDate = new Packages.java.util.Date();
+             var endDate = MYSQL_MAX_DATETIME_STRING;
+             var sqlDateFormatter = new java.text.SimpleDateFormat(MYSQL_DATETIME_FORMAT);
+             if(trialPeriod > 0) {
+             var cal = Packages.java.util.Calendar.getInstance();
+             cal.setTime(startDate);
+             cal.add(Packages.java.util.Calendar.DATE, trialPeriod);
+             endDate = sqlDateFormatter.format(cal.getTime());
+             }
+             adminModule.publishTenantSubscription(tenantDomain, cloudType, plan, sqlDateFormatter.format(startDate), endDate , "ACTIVE");
+             */
+        }
+
+        var isAdminUser = manager.isAdminUser();
+        var isBillingEnabled = false;
+        var isPaidAccount = false;
+        if (isAdminUser) {
+            isBillingEnabled = cloudTypeProperties.billing.isBillingEnabled;
+            isPaidAccount = subscriptionManager.isPaidAccount();
+        }
+
+        var remainingDays = -1;
+        if (isBillingEnabled) {
+            remainingDays = subscriptionManager.getRemainingDaysToUpgrade(tenantDomain, jagg.getSelectedCloud());
+        }
 
         return {
             "user": user,
             "loggedInUserName": loggedInUserName,
             "tenantDomain": tenantDomain,
             "docUrl": docUrl,
-            "supportUrl": supportUrl,
             "cloudTitle" : cloudTitle,
             "isGoogleAnalyticsEnabled" : isGoogleAnalyticsEnabled,
             "googleTrackingId" : googleTrackingId,
@@ -68,9 +146,11 @@ jagg.block("header/default", {
             "apiCloudPublisherURL" : apiCloudPublisherURL,
             "cloudMgtURL" : cloudMgtURL,
             "cloudIcon" : cloudIcon,
-            "changePasswordURL" : changePasswordURL,
-            "profileURL" : profileURL,
-            "zopimChatId": zopimChatId
+            "zopimChatId": zopimChatId,
+            "isBillingEnabled": isBillingEnabled,
+            "remainingDays" : remainingDays,
+            "isPaidAccount" : isPaidAccount,
+            "isAdminUser" : isAdminUser
         };
     }
 });

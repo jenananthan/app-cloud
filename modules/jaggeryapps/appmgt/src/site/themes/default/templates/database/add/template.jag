@@ -24,6 +24,7 @@ jagg.template("database/add", function (inputs, outputs, jagg) { %>
     isEdit = request.getParameter("isEdit");
     var databaseCount = outputs.databaseCount;
     var maxDatabases = outputs.maxDatabases;
+    var isDatabaseCountThrottled = outputs.isDatabaseCountThrottled;
     %>
 
  <!-- BOF App factory menu actionbar -->
@@ -118,6 +119,7 @@ jagg.template("database/add", function (inputs, outputs, jagg) { %>
     var dbUsers = '<%=dbUsers%>';
     var databaseCount = '<%=databaseCount%>';
     var maxDatabases = parseInt('<%=maxDatabases%>');
+    var isDatabaseCountThrottled = '<%=isDatabaseCountThrottled%>';
 </script>
 <script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('js/select2-4.0.0/select2.min.js'))%>"></script>
 <script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('js/jQueryValidationPlugin-1.14.0/jquery.validate.min.js'))%>"></script>

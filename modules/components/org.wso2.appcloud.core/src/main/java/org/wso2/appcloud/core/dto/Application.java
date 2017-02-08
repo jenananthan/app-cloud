@@ -31,7 +31,8 @@ public class Application {
     private List<Version> versions;
     private String customDomain;
     private String cloudType;
-
+    private int cpu;
+    private int ram;
 
     public Application(){
 
@@ -108,5 +109,21 @@ public class Application {
 
     public void setCloudType(String cloudType) {
         this.cloudType = cloudType;
+    }
+
+    public int getCpu() {
+        return cpu;
+    }
+
+    public void setCpu(int cpu) {
+        this.cpu = cpu;
+    }
+
+    public int getRam() {
+        return ram;
+    }
+
+    public void setRam(int ram) {
+        this.ram = ram;
     }
 }

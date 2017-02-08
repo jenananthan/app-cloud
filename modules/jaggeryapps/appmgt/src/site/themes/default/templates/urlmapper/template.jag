@@ -26,7 +26,7 @@ jagg.template("urlmapper", function (inputs, outputs, jagg) { %>
     var customURL = application.customURL;
     var defaultHostName = outputs.defaultHostName;
     var cloudSpecificApplicationRepresentation = outputs.cloudSpecificApplicationRepresentation;
-    var customUrlSettingsPageUrl = outputs.customUrlSettingsPageUrl;
+    var cloudMgtURL = outputs.cloudMgtURL;
 %>
 
 <!-- start of setting global javascript variable values from jaggery side -->
@@ -36,7 +36,8 @@ jagg.template("urlmapper", function (inputs, outputs, jagg) { %>
     var customURL = "<%=customURL%>";
     var defaultHostName = "<%=defaultHostName%>";
     var cloudSpecificApplicationRepresentation = "<%=cloudSpecificApplicationRepresentation%>";
-    var customUrlSettingsPageUrl = "<%=customUrlSettingsPageUrl%>";
+    var customUrlSettingsPageUrl = "<%=CUSTOM_URL_SETTINGS_PAGE_URL%>";
+    var cloudMgtURL = "<%=cloudMgtURL%>";
 </script><!-- end of setting global javascript variable -->
 
 <div class="right-pane visible">

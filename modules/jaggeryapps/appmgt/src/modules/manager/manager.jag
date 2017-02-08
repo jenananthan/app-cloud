@@ -198,5 +198,13 @@ function hasCustomURLSettingsAccess() {
     var username = jagg.getUser();
     var permission = getPropertyValue(CUSTOM_URL_PERMISSION);
     return checkAuthorizationForUser(username, permission);
-}
+};
+
+var isAdminUser = function () {
+    var tenantId = getTenantId();
+    var realmService = server.osgiService('org.wso2.carbon.user.core.service.RealmService');
+    var isAdminUser = false;
+    isAdminUser = realmService.getTenantUserRealm(tenantId).getUserStoreManager().isUserInRole(getTenantAwareUsername(), "admin");
+    return isAdminUser;
+};
 %>

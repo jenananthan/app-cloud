@@ -388,14 +388,7 @@ jagg.template("home", function(inputs, outputs, jagg) {
     }
 
     // redeploy application
-    function startApplication(){
-        if (applicationCount >= maxApplications) {
-            $('#outerContainer').empty();
-            $('#outerContainer').html('<div class="container-fluid"><div class="row row-centered">' +
-                '<div class="col-centered col-xs-10 col-sm-7  col-md-7 col-lg-6"><div class="cloud-new-content">' +
-                '<h3>You cannot have more than ' + maxApplications + " running " + cloudSpecificApplicationRepresentation.toLowerCase() + ' versions on a free subscription. ' +
-                'Please stop an existing ' + cloudSpecificApplicationRepresentation.toLowerCase() + ' version to continue.</h3></div></div></div></div>');
-        } else {
+    function startApplication() {
             executeAsync(drawProgressWindow("Starting the " + cloudSpecificApplicationRepresentation.toLowerCase() + "..."));
             jagg.post("../blocks/application/application.jag", {
                 action: "startApplication",
@@ -405,6 +398,15 @@ jagg.template("home", function(inputs, outputs, jagg) {
                 conSpecCpu: conSpecCpu,
                 conSpecMemory: conSpecMemory
             }, function(result) {
+
+            },function(jqXHR, data, errorThrown) {
+                setTimeout(reloadAppHome, 5000);
+                jagg.message({
+                    content: jqXHR.responseText,
+                    type: 'error',
+                    id: 'view_log',
+                    timeout: '5000'
+                });
             });
         }
     }

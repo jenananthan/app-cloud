@@ -34,12 +34,12 @@ jagg.block("urlmapper", {
 
         var modManager = jagg.module("manager");
         var cloudSpecificApplicationRepresentation = modManager.getCloudTypeProperties().cloudSpecificApplicationRepresentation;
-        var customUrlSettingsPageUrl = modManager.getPropertyValue(CUSTOM_URL_SETTINGS_PAGE_URL);
+        var cloudMgtURL = modManager.getPropertyValue(CLOUD_MGT_URL);
         return {
             "application": application,
             "defaultHostName": defaultHostName,
             "cloudSpecificApplicationRepresentation" : cloudSpecificApplicationRepresentation,
-            "customUrlSettingsPageUrl" : customUrlSettingsPageUrl
+            "cloudMgtURL" : cloudMgtURL
         };
     }
 
