@@ -148,6 +148,16 @@
     if (samlRequest != null) {
         isLogoutRequest = ssoRelyingParty.isLogoutRequest(samlRequest);
         if (isLogoutRequest) {
+            /*------------------------ handle back channel logout request start --------------------*/
+            if (site.backChannelAuth.enabled) {
+                var backChannelAuthHandler = Packages.org.wso2.carbon.cloud.back.channel.BackChannelAuthHandler;
+                var issuer = site.backChannelAuth.issuer;
+                if (backChannelAuthHandler.canLogout(issuer, samlRequest)) {
+                    log.info("Invalidate back channel authenticated session");
+                    backChannelAuthHandler.invalidateSession(issuer, samlRequest);
+                    return;
+                }
+            }
             ssoRelyingParty.invalidateSessionBySAMLResponse(samlRequest);
             audit.info("User : " + jagg.getUser() + ", Action : logout");
             session.invalidate();

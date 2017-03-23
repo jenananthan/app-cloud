@@ -21,6 +21,85 @@ jagg.template("sso/filter", function(inputs, outputs, jagg) { %>
     var log = new Log("sso/filter");
 
     var site = require("/site/conf/site.json");
+
+    /*---------------------------------------back channel authentication start ---------------------*/
+    function canAuthenticate(authCookie, samlssoTokenId) {
+        if (session.get("LOGGED_IN_USER")) {
+            return false;
+        }
+
+        if (!site.backChannelAuth.enabled) {
+            return false
+        }
+
+        if (authCookie && samlssoTokenId) {
+            return true;
+        }
+        log.info("Cookies not found for back channel authentication");
+        return false;
+    }
+
+    function setBackChannelAuthConfig() {
+        var tokenEP = site.backChannelAuth.tokenEP;
+        var clientKey = site.backChannelAuth.clientKey;
+        var clientSecret = site.backChannelAuth.clientSecret;
+        var jwtAuhthenticatorEP = site.backChannelAuth.jwtAuhthenticatorEP;
+
+        var backChannelAuthConfig = Packages.org.wso2.carbon.cloud.back.channel.config.BackChannelAuthConfig.getInstance();
+        backChannelAuthConfig.setTokenEP(tokenEP);
+        backChannelAuthConfig.setClientKey(clientKey);
+        backChannelAuthConfig.setClientSecret(clientSecret);
+        backChannelAuthConfig.setJwtAuthenticatorEP(jwtAuhthenticatorEP);
+    }
+
+    var authCookie = request.getCookie("commonAuthId");
+    var samlssoTokenId = request.getCookie("samlssoTokenId");
+
+    if (canAuthenticate(authCookie, samlssoTokenId)) {
+
+        try {
+            setBackChannelAuthConfig();
+            var issuer = site.backChannelAuth.issuer;
+            var backChannelAuthHandler = Packages.org.wso2.carbon.cloud.back.channel.BackChannelAuthHandler;
+            var authInfo = backChannelAuthHandler.login(issuer, authCookie.value, samlssoTokenId.value);
+            if (authInfo) {
+                var username = String(authInfo.getUsername());
+                var sessionIndex = String(authInfo.getSessionIndex());
+                jagg.setUser(username);
+                backChannelAuthHandler.setSession(session, sessionIndex, issuer);
+                session.put("back-channel-auth", "true");
+
+                log.info("Back channel login successful for user :" + username);
+                //-------------------APP Specific---------------------------
+                var modManager = jagg.module("manager");
+                jagg.setSelectedCloud(request.getRequestURL());
+                var permission = modManager.getPropertyValue(jagg.getSelectedCloud() + LOGIN_PERMISSION);
+                var isUserAuthorized = modManager.checkAuthorizationForUser(username, permission);
+                if(isUserAuthorized){
+                    jagg.setUser(username);
+                    var email = modManager.getEmailAddressForUser(username);
+                    modManager.setUserEmailAddress(email);
+                    session.put("LOGGED_IN_USER", username);
+                    response.sendRedirect("/appmgt/site/pages/index.jag");
+                } else {
+                    log.info("User not authorized.Redirect to 401 page.");
+                    session.invalidate();
+                    response.sendRedirect("/appmgt/site/pages/error-pages/401.html");
+                }
+                //var url = request.getRequestURL();
+                //response.sendRedirect(url);
+                return;
+            } else {
+                log.info("Could not do back channel authentication. Continue with SAML flow");
+            }
+        } catch (e) {
+            log.error("Error while trying to authenticate using back channel authentication. Continue with SAML flow");
+            log.error(e);
+        }
+    }
+
+    /*---------------------------------------back channel authentication end ---------------------*/
+
     var security =require("sso");
 	var ssoRelyingParty = new security.SSORelyingParty(jagg.getIssuer(request.getRequestURL()));
 	var sessionId = session.getId();

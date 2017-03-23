@@ -27,6 +27,21 @@ include("/jagg/jagg.jag");
         return;
     }
 
+    /*-------------------back channel auth logout request start------------------*/
+    var site = require("/site/conf/site.json");
+    var log = new Log();
+    if ("true" == session.get("back-channel-auth")) {
+        log.info("Back channel logout initiated");
+        session.invalidate();
+        var samlSSOURL = site.backChannelAuth.samlSSOURL;
+        var issuer = site.backChannelAuth.issuer;
+        var returnToURL = site.backChannelAuth.returnToURL;
+        var sloURL = samlSSOURL + "?slo=true&spEntityID=" + issuer + "&returnTo=" + returnToURL;
+        response.sendRedirect(sloURL);
+        return;
+    }
+    /*-------------------back channel auth logout request end ------------------*/
+
     jagg.render({
         "name":"page/master",
         "inputs":{
