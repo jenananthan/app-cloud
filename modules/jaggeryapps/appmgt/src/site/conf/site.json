@@ -22,5 +22,15 @@
     "responseSigningEnabled":true,
     "assertionSigningEnabled":true,
     "audienceRestrictionsEnabled":true
+  },
+  "backChannelAuth" : {
+    "enabled" : true,
+    "issuer" : "integration-cloud",
+    "tokenEP" : "https://identity.cloudlocal.wso2.com:9443/oauth2/token",
+    "clientKey" : "8iM2huNmn9PuixhzauyHPiDudaga",
+    "clientSecret": "zIwh3dCCPOUZODhG317JeNFVIpsa",
+    "jwtAuthenticatorEP" : "https://localhost:9444/services/LoggedUserInfoAdmin",
+    "returnToURL": "https://integration.cloudlocal.wso2.com:9446/appmgt",
+    "samlSSOURL" : "https://identity.cloudlocal.wso2.com:9443/samlsso"
   }
 }
