@@ -56,7 +56,6 @@ jagg.template("sso/filter", function(inputs, outputs, jagg) { %>
     var samlssoTokenId = request.getCookie("samlssoTokenId");
 
     if (canAuthenticate(authCookie, samlssoTokenId)) {
-
         try {
             setBackChannelAuthConfig();
             var issuer = site.backChannelAuth.issuer;
@@ -65,29 +64,12 @@ jagg.template("sso/filter", function(inputs, outputs, jagg) { %>
             if (authInfo) {
                 var username = String(authInfo.getUsername());
                 var sessionIndex = String(authInfo.getSessionIndex());
-                jagg.setUser(username);
                 backChannelAuthHandler.setSession(session, sessionIndex, issuer);
                 session.put("back-channel-auth", "true");
-
                 log.info("Back channel login successful for user :" + username);
                 //-------------------APP Specific---------------------------
-                var modManager = jagg.module("manager");
-                jagg.setSelectedCloud(request.getRequestURL());
-                var permission = modManager.getPropertyValue(jagg.getSelectedCloud() + LOGIN_PERMISSION);
-                var isUserAuthorized = modManager.checkAuthorizationForUser(username, permission);
-                if(isUserAuthorized){
-                    jagg.setUser(username);
-                    var email = modManager.getEmailAddressForUser(username);
-                    modManager.setUserEmailAddress(email);
-                    session.put("LOGGED_IN_USER", username);
-                    response.sendRedirect("/appmgt/site/pages/index.jag");
-                } else {
-                    log.info("User not authorized.Redirect to 401 page.");
-                    session.invalidate();
-                    response.sendRedirect("/appmgt/site/pages/error-pages/401.html");
-                }
-                //var url = request.getRequestURL();
-                //response.sendRedirect(url);
+                var requestedURI = request.getRequestURL();
+                jagg.setSessionDetailsAndRedirection(username, requestedURI);
                 return;
             } else {
                 log.info("Could not do back channel authentication. Continue with SAML flow");

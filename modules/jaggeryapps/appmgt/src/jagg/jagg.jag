@@ -18,7 +18,7 @@
  */
 include('/jagg/constants.jag');
 var site = require("/site/conf/site.json");
-
+var log = new Log();
 //TODO : remove this when log configs are implemented
 Log.prototype.isDebugEnabled = function () {
     return false;
@@ -66,6 +66,24 @@ var jagg = jagg || (function () {
 
     var setUser = function (user) {
         session.put("logged.user", user);
+    };
+
+    var setSessionDetailsAndRedirection = function(username, requestedURI) {
+        var modManager = jagg.module("manager");
+        jagg.setSelectedCloud(requestedURI);
+        var permission = modManager.getPropertyValue(jagg.getSelectedCloud() + LOGIN_PERMISSION);
+        var isUserAuthorized = modManager.checkAuthorizationForUser(username, permission);
+        if(isUserAuthorized){
+            jagg.setUser(username);
+            var email = modManager.getEmailAddressForUser(username);
+            modManager.setUserEmailAddress(email);
+            session.put("LOGGED_IN_USER", username);
+            response.sendRedirect("/appmgt/site/pages/index.jag");
+        } else {
+            log.info("User not authorized.Redirect to 401 page.");
+            session.invalidate();
+            response.sendRedirect("/appmgt/site/pages/error-pages/401.html");
+        }
     };
 
     var getAppTypePropertyConfFilePath = function () {
@@ -600,6 +618,7 @@ return getThemePath() + path;
 
     return {
         setUser:setUser,
+        setSessionDetailsAndRedirection:setSessionDetailsAndRedirection,
         getUser:getUser,
         block:block,
         module:module,

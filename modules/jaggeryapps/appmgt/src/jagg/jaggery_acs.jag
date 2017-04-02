@@ -118,22 +118,9 @@
             }
             samlResponse = samlResponse.replace('<?xml version="1.0" encoding="UTF-8"?>', "");
             ssoRelyingParty.setSessionAuthenticated(sessionId, samlResponse);
-            var userName = ssoRelyingParty.getLoggedInUser(sessionId);
-            var modManager = jagg.module("manager");
-            jagg.setSelectedCloud(request.getRequestURL());
-            var permission = modManager.getPropertyValue(jagg.getSelectedCloud() + LOGIN_PERMISSION);
-            var isUserAuthorized = modManager.checkAuthorizationForUser(userName, permission);
-            if(isUserAuthorized){
-                jagg.setUser(userName);
-                var email = modManager.getEmailAddressForUser(userName);
-                modManager.setUserEmailAddress(email);
-                session.put("LOGGED_IN_USER", ssoRelyingParty.getLoggedInUser(sessionId));
-                audit.info("User : " + jagg.getUser() + ", Action : login");
-                response.sendRedirect("/appmgt/site/pages/index.jag");
-            } else {
-                session.invalidate();
-                response.sendRedirect("/appmgt/site/pages/error-pages/401.html");
-            }
+            var username = ssoRelyingParty.getLoggedInUser(sessionId);
+            var requestedURI = request.getRequestURL();
+            jagg.setSessionDetailsAndRedirection(username, requestedURI);
             return;
         } else {
             // if the saml response is log out request from IDP, we log out from web app.
