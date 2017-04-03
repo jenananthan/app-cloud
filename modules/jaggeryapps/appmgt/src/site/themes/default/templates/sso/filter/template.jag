@@ -64,12 +64,12 @@ jagg.template("sso/filter", function(inputs, outputs, jagg) { %>
             if (authInfo) {
                 var username = String(authInfo.getUsername());
                 var sessionIndex = String(authInfo.getSessionIndex());
+                //Fix for session fization issue - WSOTWOCLOUD-769
+                jagg.setNewUserSession(username);
                 backChannelAuthHandler.setSession(session, sessionIndex, issuer);
                 session.put("back-channel-auth", "true");
                 log.info("Back channel login successful for user :" + username);
-                //-------------------APP Specific---------------------------
-                var requestedURI = request.getRequestURL();
-                jagg.setSessionDetailsAndRedirection(username, requestedURI);
+                jagg.setSessionDetailsAndRedirection(username);
                 return;
             } else {
                 log.info("Could not do back channel authentication. Continue with SAML flow");

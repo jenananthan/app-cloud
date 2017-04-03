@@ -263,6 +263,9 @@ public class KubernetesRuntimeProvisioningService implements RuntimeProvisioning
             annotationMap.put(KubernetesPovisioningConstants.ANNOTATION_KEY_SSL_TERM,
                     KubernetesPovisioningConstants.ANNOTATION_VALUE_SSL_TERM);
         }
+        //Enable cookie sticky session
+        annotationMap.put(KubernetesPovisioningConstants.ANNOTATION_KEY_COOKIE_STICKY_SESSION,
+                KubernetesPovisioningConstants.ANNOTATION_VALUE_COOKIE_STICKY_SESSION);
         ServicePort servicePorts = new ServicePortBuilder().withName(serviceProxy.getServiceName())
                 .withProtocol(serviceProxy.getServiceProtocol())
                 .withPort(serviceProxy.getServicePort())

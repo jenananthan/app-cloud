@@ -118,8 +118,7 @@ $(document).ready(function() {
 
         $(".add-env").click(function() {
             //Disable "Add Environment Variable" button
-            $(this).css('pointer-events', 'none');
-            $(this).attr("title", "Save Environment Variable to Enable");
+            $(this).css("pointer-events", "none").attr("title", "Save Environment Variable to Enable");
             var valueControl;
             if(noOfDbs == 0){
                 valueControl = '<input type="text" class="form-control element-value-holder" id="value" placeholder="Value">';
@@ -177,15 +176,14 @@ $(document).ready(function() {
                 prevValue = $(this).parent().parent().parent().find('.element-value-holder')[0].value;
             } else {
                 //Disable "Add Environment Variable" Button
-                $(".add-env").css('pointer-events', 'none');
-                $(".add-env").attr("title", "Save Environment Variable to Enable");
+                $(".add-env").css("pointer-events", "none").attr("title", "Save Environment Variable to Enable");
                 $(this).parent().parent().find('.fw-delete').removeClass('fw-delete').addClass('fw-cancel');
                 //Disable Other environment variables "Edit" button
                 var parentElement = $(this).parent().filter('.edit-env')[0];
                 $('.edit-env').each(function() {
                     var currentElement = $(this).get(0);
-                    if(currentElement !== parentElement) {
-                        if( $(this).hasClass('edit-enable')){
+                    if (currentElement !== parentElement) {
+                        if ($(this).hasClass('edit-enable')) {
                             $(this).removeClass('edit-enable');
                         }
                         $(this).addClass('edit-disable');
@@ -217,13 +215,12 @@ $(document).ready(function() {
             var isNewRow = $(this).hasClass('cancel-new-entry');
             if (isNewRow) {
                 //Enable "Add Environment Variable" button
-                $(".add-env").css('pointer-events', 'auto');
-                $(".add-env").attr("title", "Add Environment Variable");
+                $(".add-env").css("pointer-events", "auto").attr("title", "Add Environment Variable");
                 //Enable other environment variables "Edit" Button
                 var siblingElement = $(this).parent().parent().find('.edit-env')[0];
                 $('.edit-env').each(function() {
                     var currentElement = $(this).get(0);
-                    if(currentElement !== siblingElement) {
+                    if (currentElement !== siblingElement) {
                         $(this).addClass('edit-enable');
                     }
                 });
@@ -231,14 +228,13 @@ $(document).ready(function() {
                 return;
             } else {
                 //Enable "Add Environment Variable" button
-                $(".add-env").css('pointer-events', 'auto');
-                $(".add-env").attr("title", "Add Environment Variable");
+                $(".add-env").css("pointer-events", "auto").attr("title", "Add Environment Variable");
 
                 //Enable other environment variables "Edit" Button
                 var siblingElement = $(this).parent().parent().find('.edit-env')[0];
                 $('.edit-env').each(function() {
                     var currentElement = $(this).get(0);
-                    if(currentElement !== siblingElement) {
+                    if (currentElement !== siblingElement) {
                         $(this).addClass('edit-enable');
                     }
                 });
@@ -337,13 +333,12 @@ $(document).ready(function() {
 
         displayAppRedeployNotification();
         //Enable "Add Environment Variable" button
-        $(".add-env").css('pointer-events', 'auto');
-        $(".add-env").attr("title", "Add Environment Variable");
+        $(".add-env").css("pointer-events", "auto").attr("title", "Add Environment Variable");
         //Enable Other environment variables "Edit" button
         var parentElement = element.parent().filter('.edit-env')[0];
         $('.edit-env').each(function() {
             var currentElement = element.get(0);
-            if(currentElement !== parentElement){
+            if (currentElement !== parentElement) {
                 element.removeClass("edit-disable");
             }
         });

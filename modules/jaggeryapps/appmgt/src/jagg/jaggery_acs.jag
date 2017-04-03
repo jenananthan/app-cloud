@@ -42,11 +42,11 @@
         isLogoutResponse = ssoRelyingParty.isLogoutResponse(samlResponse);
         if (!isLogoutResponse) {
             var MultitenantConstants = Packages.org.wso2.carbon.utils.multitenancy.MultitenantConstants;
-            var fullUserName = ssoRelyingParty.getSAMLResponseNameId(samlResponse);
+            var fullUsername = ssoRelyingParty.getSAMLResponseNameId(samlResponse);
             var MultitenantUtils = Packages.org.wso2.carbon.utils.multitenancy.MultitenantUtils;
             var domainName = null;
-            if (fullUserName != null) {
-                domainName = MultitenantUtils.getTenantDomain(fullUserName);
+            if (fullUsername != null) {
+                domainName = MultitenantUtils.getTenantDomain(fullUsername);
             } else {
                 log.error("SAML Response Schema verification failed");
                 response.sendRedirect("../site/pages/error-pages/401.html");
@@ -117,10 +117,15 @@
                 }
             }
             samlResponse = samlResponse.replace('<?xml version="1.0" encoding="UTF-8"?>', "");
+
+            //Fix for session fization issue - WSOTWOCLOUD-769
+            jagg.setNewUserSession(fullUsername);
+            //Set the new session id
+            sessionId = session.getId();
             ssoRelyingParty.setSessionAuthenticated(sessionId, samlResponse);
             var username = ssoRelyingParty.getLoggedInUser(sessionId);
-            var requestedURI = request.getRequestURL();
-            jagg.setSessionDetailsAndRedirection(username, requestedURI);
+
+            jagg.setSessionDetailsAndRedirection(username);
             return;
         } else {
             // if the saml response is log out request from IDP, we log out from web app.

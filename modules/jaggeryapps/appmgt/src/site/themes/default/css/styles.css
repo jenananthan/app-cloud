@@ -1981,12 +1981,6 @@ a.btn-action {
     display: none;
 }
 
-.select2 {
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
 .form-control[disabled].element-value-holder{
     width: 350px;
 }

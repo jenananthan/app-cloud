@@ -51,6 +51,8 @@ public class KubernetesPovisioningConstants {
 
     public static final String ANNOTATION_KEY_HOST = "serviceloadbalancer/lb.host";
     public static final String ANNOTATION_KEY_SSL_TERM = "serviceloadbalancer/lb.sslTerm";
+    public static final String ANNOTATION_KEY_COOKIE_STICKY_SESSION = "serviceloadbalancer/lb.cookie-sticky-session";
+    public static final String ANNOTATION_VALUE_COOKIE_STICKY_SESSION = "true";
     public static final String ANNOTATION_VALUE_SSL_TERM = "true";
     public static final String SERVICE_SESSION_AFFINITY_MODE = "ClientIP";
     public static final int HTTPS_SERVICE_PORT = 443;

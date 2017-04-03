@@ -19,6 +19,7 @@
 include('/jagg/constants.jag');
 var site = require("/site/conf/site.json");
 var log = new Log();
+var audit = org.wso2.carbon.CarbonConstants.AUDIT_LOG;
 //TODO : remove this when log configs are implemented
 Log.prototype.isDebugEnabled = function () {
     return false;
@@ -64,23 +65,33 @@ var jagg = jagg || (function () {
         return session.get("logged.user");
     };
 
+    var setNewUserSession = function (user) {
+        //if jaggery allows session reset - with patch0809
+        if (typeof request.getSession == "function") {
+            if (session && !session.isNew()) {
+                session.invalidate();
+            }
+            session = request.getSession(true);
+        }
+        session.put("logged.user", user);
+    };
+
     var setUser = function (user) {
         session.put("logged.user", user);
     };
 
-    var setSessionDetailsAndRedirection = function(username, requestedURI) {
+    var setSessionDetailsAndRedirection = function(username) {
         var modManager = jagg.module("manager");
-        jagg.setSelectedCloud(requestedURI);
+        jagg.setSelectedCloud(request.getRequestURL());
         var permission = modManager.getPropertyValue(jagg.getSelectedCloud() + LOGIN_PERMISSION);
         var isUserAuthorized = modManager.checkAuthorizationForUser(username, permission);
         if(isUserAuthorized){
-            jagg.setUser(username);
             var email = modManager.getEmailAddressForUser(username);
             modManager.setUserEmailAddress(email);
             session.put("LOGGED_IN_USER", username);
+            audit.info("User : " + jagg.getUser() + ", Action : login");
             response.sendRedirect("/appmgt/site/pages/index.jag");
         } else {
-            log.info("User not authorized.Redirect to 401 page.");
             session.invalidate();
             response.sendRedirect("/appmgt/site/pages/error-pages/401.html");
         }
@@ -618,6 +629,7 @@ return getThemePath() + path;
 
     return {
         setUser:setUser,
+        setNewUserSession:setNewUserSession,
         setSessionDetailsAndRedirection:setSessionDetailsAndRedirection,
         getUser:getUser,
         block:block,
