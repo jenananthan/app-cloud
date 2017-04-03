@@ -30,8 +30,8 @@ include("/jagg/jagg.jag");
     /*-------------------back channel auth logout request start------------------*/
     var site = require("/site/conf/site.json");
     var log = new Log();
-    if ("true" == session.get("back-channel-auth")) {
-        log.info("Back channel logout initiated");
+    if (site.backChannelAuth.enabled) {
+        log.info("Trigger IDP initiated logout request");
         session.invalidate();
         var samlSSOURL = site.backChannelAuth.samlSSOURL;
         var issuer = site.backChannelAuth.issuer;
